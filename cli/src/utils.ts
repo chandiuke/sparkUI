@@ -32,6 +32,28 @@ export async function detectTypeScript(): Promise<boolean> {
   return fileExists(path.join(root, "tsconfig.json"));
 }
 
+export async function detectFramework(): Promise<"next" | "vite" | "cra" | "unknown"> {
+  const root = await getProjectRoot();
+  const packageJsonPath = path.join(root, "package.json");
+  
+  try {
+    const packageJson = await fs.readJson(packageJsonPath);
+    const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+    
+    if (deps["next"]) return "next";
+    if (deps["vite"]) return "vite";
+    if (deps["react-scripts"]) return "cra";
+    return "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
+export function removeUseClient(content: string): string {
+  // Remove "use client" directive for non-Next.js projects
+  return content.replace(/^["']use client["'];?\s*\n?/gm, "");
+}
+
 export function getInstallCommand(pm: string, deps: string[], isDev = false): string {
   const devFlag = isDev ? (pm === "npm" ? "--save-dev" : "-D") : "";
   

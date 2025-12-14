@@ -1,6 +1,6 @@
 {
   "name": "sparkui-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI for adding SparkUI components to your project",
   "type": "module",
   "bin": {
@@ -11,7 +11,13 @@
     "dev": "tsup src/index.ts --format esm --watch",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["sparkui", "react", "components", "tailwind", "cli"],
+  "keywords": [
+    "sparkui",
+    "react",
+    "components",
+    "tailwind",
+    "cli"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {

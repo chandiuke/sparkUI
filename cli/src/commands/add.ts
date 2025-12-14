@@ -10,6 +10,8 @@ import {
   getProjectRoot,
   detectPackageManager,
   detectTypeScript,
+  detectFramework,
+  removeUseClient,
   getInstallCommand,
   fileExists,
   log,
@@ -29,6 +31,8 @@ export async function add(componentName: string, options: AddOptions) {
   const root = await getProjectRoot();
   const pm = await detectPackageManager();
   const isTs = await detectTypeScript();
+  const framework = await detectFramework();
+  const isNextJs = framework === "next";
 
   // Check if component exists in registry
   const component = registry[componentName.toLowerCase()];
@@ -44,6 +48,8 @@ export async function add(componentName: string, options: AddOptions) {
 
   console.log(chalk.bold(`✦ Adding ${component.name}`));
   console.log(chalk.dim(component.description));
+  console.log("");
+  console.log(chalk.dim(`Detected: ${framework} • ${isTs ? "TypeScript" : "JavaScript"} • ${pm}`));
   console.log("");
 
   // Check for existing files
@@ -83,47 +89,33 @@ export async function add(componentName: string, options: AddOptions) {
       const sourcePath = path.join(root, file);
       const targetPath = path.join(root, file);
 
-      // Check if source exists (for local development)
-      if (await fileExists(sourcePath)) {
-        const content = await fs.readFile(sourcePath, "utf-8");
+      // Fetch from remote registry
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        let content = await response.text();
+        
+        // Remove "use client" for non-Next.js projects (Vite, CRA, etc.)
+        if (!isNextJs) {
+          content = removeUseClient(content);
+        }
         
         // Convert to JSX if not TypeScript project
-        let finalContent = content;
         if (!isTs) {
-          finalContent = convertToJsx(content);
-          // Change file extension
+          content = convertToJsx(content);
           const jsxPath = targetPath.replace(".tsx", ".jsx").replace(".ts", ".js");
           await fs.ensureDir(path.dirname(jsxPath));
-          await fs.writeFile(jsxPath, finalContent, "utf-8");
+          await fs.writeFile(jsxPath, content, "utf-8");
           spinner.succeed(`Created ${path.relative(root, jsxPath)}`);
         } else {
           await fs.ensureDir(path.dirname(targetPath));
-          await fs.writeFile(targetPath, finalContent, "utf-8");
+          await fs.writeFile(targetPath, content, "utf-8");
           spinner.succeed(`Created ${path.relative(root, targetPath)}`);
         }
-      } else {
-        // Fetch from remote registry
-        try {
-          const response = await fetch(url);
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          let content = await response.text();
-          
-          if (!isTs) {
-            content = convertToJsx(content);
-            const jsxPath = targetPath.replace(".tsx", ".jsx").replace(".ts", ".js");
-            await fs.ensureDir(path.dirname(jsxPath));
-            await fs.writeFile(jsxPath, content, "utf-8");
-            spinner.succeed(`Created ${path.relative(root, jsxPath)}`);
-          } else {
-            await fs.ensureDir(path.dirname(targetPath));
-            await fs.writeFile(targetPath, content, "utf-8");
-            spinner.succeed(`Created ${path.relative(root, targetPath)}`);
-          }
-        } catch (fetchError) {
-          spinner.fail(`Failed to fetch ${file}`);
-          log.error("Make sure you have internet connection or the component exists in the registry.");
-          return;
-        }
+      } catch (fetchError) {
+        spinner.fail(`Failed to fetch ${file}`);
+        log.error("Make sure you have internet connection or the component exists in the registry.");
+        return;
       }
     }
   } catch (error) {
