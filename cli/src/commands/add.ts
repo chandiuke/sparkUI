@@ -100,17 +100,14 @@ export async function add(componentName: string, options: AddOptions) {
           content = removeUseClient(content);
         }
         
-        // Convert to JSX if not TypeScript project
+        // Always keep as .tsx - modern tooling (Vite, etc.) handles it fine
+        // TypeScript components work in JS projects with proper config
+        await fs.ensureDir(path.dirname(targetPath));
+        await fs.writeFile(targetPath, content, "utf-8");
+        spinner.succeed(`Created ${path.relative(root, targetPath)}`);
+        
         if (!isTs) {
-          content = convertToJsx(content);
-          const jsxPath = targetPath.replace(".tsx", ".jsx").replace(".ts", ".js");
-          await fs.ensureDir(path.dirname(jsxPath));
-          await fs.writeFile(jsxPath, content, "utf-8");
-          spinner.succeed(`Created ${path.relative(root, jsxPath)}`);
-        } else {
-          await fs.ensureDir(path.dirname(targetPath));
-          await fs.writeFile(targetPath, content, "utf-8");
-          spinner.succeed(`Created ${path.relative(root, targetPath)}`);
+          log.info("Tip: Components are TypeScript. Add tsconfig.json or configure your bundler to handle .tsx files.");
         }
       } catch (fetchError) {
         spinner.fail(`Failed to fetch ${file}`);
@@ -152,24 +149,11 @@ function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// Convert TypeScript to JavaScript
+// For JavaScript projects, we keep the .tsx file as-is
+// Modern JS tooling (Vite, etc.) can handle TSX files
+// This avoids complex regex conversion that can break code
 function convertToJsx(tsxCode: string): string {
-  return tsxCode
-    .replace(/import\s+type\s+.*?from\s+['"].*?['"];?\n?/g, "")
-    .replace(/,?\s*type\s+\w+/g, "")
-    .replace(/interface\s+\w+\s*\{[\s\S]*?\}\n*/g, "")
-    .replace(/type\s+\w+\s*=[\s\S]*?;\n*/g, "")
-    .replace(/(useState|useRef|useCallback|useMemo|useContext)<[^>]+>/g, "$1")
-    .replace(/\s+as\s+\w+(\[\])?/g, "")
-    .replace(/\):\s*[A-Za-z\[\]<>,\s\|\.]+\s*(?==>|\{)/g, ") ")
-    .replace(/(const|let|var)\s+(\w+):\s*[A-Za-z\[\]<>,\s\|\.]+\s*=/g, "$1 $2 =")
-    .replace(/\(([^)]*)\)\s*=>/g, (match, params) => {
-      const cleanParams = params.replace(/:\s*[A-Za-z\[\]<>,\s\|\.]+/g, "");
-      return `(${cleanParams}) =>`;
-    })
-    .replace(/import\s*\{\s*\}\s*from\s*['"].*?['"];?\n?/g, "")
-    .replace(/\{\s*,/g, "{")
-    .replace(/,\s*\}/g, "}")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  // Just return the code as-is - TSX works in JS projects with proper config
+  // The main thing we do is remove "use client" for non-Next projects (done separately)
+  return tsxCode;
 }
