@@ -6,12 +6,12 @@ Premium UI components ready to copy & paste. Built with Tailwind + Framer Motion
 
 ```bash
 # Initialize SparkUI in your project
-npx sparkui init
+npx sparkui-cli init
 
 # Add components
-npx sparkui add button
-npx sparkui add accordion
-npx sparkui add chip
+npx sparkui-cli add button
+npx sparkui-cli add accordion
+npx sparkui-cli add chip
 ```
 
 ## Features
