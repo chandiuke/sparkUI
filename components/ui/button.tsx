@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  forwardRef,
-  ButtonHTMLAttributes,
-  AnchorHTMLAttributes,
-  useState,
-} from "react";
+import { forwardRef, useState } from "react";
 import { clsx } from "clsx";
 
 type ButtonVariant =
@@ -40,17 +35,21 @@ interface BaseButtonProps {
   children?: React.ReactNode;
 }
 
-type ButtonAsButton = BaseButtonProps &
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, keyof BaseButtonProps> & {
-    as?: "button";
-    href?: never;
-  };
+type ButtonAsButton = BaseButtonProps & {
+  as?: "button";
+  href?: never;
+  type?: "button" | "submit" | "reset";
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+};
 
-type ButtonAsAnchor = BaseButtonProps &
-  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, keyof BaseButtonProps> & {
-    as: "a";
-    href: string;
-  };
+type ButtonAsAnchor = BaseButtonProps & {
+  as: "a";
+  href: string;
+  target?: string;
+  rel?: string;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
+};
 
 export type ButtonProps = ButtonAsButton | ButtonAsAnchor;
 
@@ -231,34 +230,38 @@ export const Button = forwardRef<
     };
 
     if (props.as === "a") {
-      const { as, ...anchorProps } = props as ButtonAsAnchor;
+      const anchorProps = props as ButtonAsAnchor;
       return (
         <a
           ref={ref as React.Ref<HTMLAnchorElement>}
+          href={anchorProps.href}
+          target={anchorProps.target}
+          rel={anchorProps.rel}
           role="button"
           tabIndex={isDisabled ? -1 : 0}
           aria-disabled={isDisabled || undefined}
           className={baseStyles}
           style={scaleStyle}
+          onClick={anchorProps.onClick}
           {...pressHandlers}
-          {...anchorProps}
         >
           {content}
         </a>
       );
     }
 
-    const { as, ...buttonProps } = props as ButtonAsButton;
+    const buttonProps = props as ButtonAsButton;
     return (
       <button
         ref={ref as React.Ref<HTMLButtonElement>}
+        type={buttonProps.type || "button"}
         className={baseStyles}
         style={scaleStyle}
         disabled={isDisabled || isLoading}
         aria-disabled={isDisabled || isLoading || undefined}
         aria-busy={isLoading || undefined}
+        onClick={buttonProps.onClick}
         {...pressHandlers}
-        {...buttonProps}
       >
         {content}
       </button>
