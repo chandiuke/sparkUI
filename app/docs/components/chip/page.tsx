@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { PageWrapper } from "@/components/page-transition";
 import { Chip, AnimatePresence } from "@/components/ui/chip";
 import { CodePreview, CodeBlock } from "@/components/docs/code-preview";
 import { TableOfContents } from "@/components/docs/toc";
@@ -50,8 +49,7 @@ export default function ChipPage() {
   };
 
   return (
-    <PageWrapper>
-      <div className="flex gap-16">
+          <div className="flex gap-16">
         {/* Main Content */}
         <div className="flex-1 min-w-0 max-w-3xl">
           {/* Header */}
@@ -631,6 +629,5 @@ export default function FilterChips(): JSX.Element {
           </div>
         </div>
       </div>
-    </PageWrapper>
   );
 }

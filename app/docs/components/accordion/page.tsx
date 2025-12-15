@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { PageWrapper } from "@/components/page-transition";
 import {
   Accordion,
   AccordionItem,
@@ -95,8 +94,7 @@ function ControlledAccordionDemo() {
 
 export default function AccordionPage() {
   return (
-    <PageWrapper>
-      <div className="flex gap-16">
+          <div className="flex gap-16">
         <div className="flex-1 min-w-0 max-w-3xl">
           <header className="mb-12">
             <h1 className="text-4xl font-bold tracking-tight mb-3">Accordion</h1>
@@ -858,6 +856,5 @@ export default function ControlledAccordion(): JSX.Element {
           </div>
         </div>
       </div>
-    </PageWrapper>
   );
 }

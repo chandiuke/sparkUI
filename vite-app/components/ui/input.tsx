@@ -1,7 +1,7 @@
 import React, { forwardRef, useState, useId, useRef } from "react";
 import { clsx } from "clsx";
 
-type InputVariant = "default" | "filled" | "underline" | "ghost";
+type InputVariant = "default" | "filled" | "underline" | "ghost" | "flat";
 type InputSize = "sm" | "md" | "lg";
 type InputColor = "default" | "primary" | "secondary" | "success" | "warning" | "danger";
 
@@ -53,39 +53,46 @@ const colorClasses = {
     focusBorder: "",
     focusRing: "focus-within:ring-[3px] focus-within:ring-foreground/25",
     label: "text-foreground",
+    flat: "bg-muted text-foreground",
   },
   primary: {
     border: "border-primary",
     focusBorder: "focus-within:border-primary",
     focusRing: "focus-within:ring-[3px] focus-within:ring-primary/40",
     label: "text-primary",
+    flat: "bg-primary/10 text-primary",
   },
   secondary: {
     border: "border-secondary",
     focusBorder: "focus-within:border-secondary",
     focusRing: "focus-within:ring-[3px] focus-within:ring-secondary/40",
     label: "text-secondary",
+    flat: "bg-secondary/10 text-secondary",
   },
   success: {
     border: "border-success",
     focusBorder: "focus-within:border-success",
     focusRing: "focus-within:ring-[3px] focus-within:ring-success/40",
     label: "text-success",
+    flat: "bg-success/10 text-success",
   },
   warning: {
     border: "border-warning",
     focusBorder: "focus-within:border-warning",
     focusRing: "focus-within:ring-[3px] focus-within:ring-warning/40",
     label: "text-warning",
+    flat: "bg-warning/10 text-warning",
   },
   danger: {
     border: "border-danger",
     focusBorder: "focus-within:border-danger",
     focusRing: "focus-within:ring-[3px] focus-within:ring-danger/40",
     label: "text-danger",
+    flat: "bg-danger/10 text-danger",
   },
 };
 
+// Icons
 const ClearIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -177,7 +184,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const isPasswordType = type === "password";
     const inputType = isPasswordType ? (showPassword ? "text" : "password") : type;
 
-    const activeColor = invalid ? "danger" : valid ? "success" : color;
+    // Determine active color: use user's color if set, otherwise default to danger/success for validation states
+    const hasCustomColor = color !== "default";
+    const activeColor = hasCustomColor ? color : invalid ? "danger" : valid ? "success" : color;
     const colors = colorClasses[activeColor];
     const isDefaultColor = activeColor === "default";
 
@@ -225,6 +234,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         !borderless && !hasCustomBorder && colors.focusBorder,
         !hasCustomFocus && colors.focusRing
       ),
+      flat: clsx(
+        "rounded-xl border-0",
+        colors.flat,
+        !hasCustomFocus && colors.focusRing
+      ),
       underline: clsx(
         "rounded-none bg-transparent",
         !borderless && "border-b-2",
@@ -269,10 +283,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       </button>
     );
 
+    // Determine helper text and icon
     const helperText = invalid && errorMessage ? errorMessage : valid && successMessage ? successMessage : description;
     const helperColor = invalid ? "text-danger" : valid ? "text-success" : "text-muted-foreground";
     const showHelper = helperText !== undefined;
 
+    // Determine status icon to show
     const showStatusIcon = (invalid || valid) && !loading && !endContent;
     const StatusIcon = invalid ? ErrorIcon : valid ? CheckIcon : null;
     const statusIconColor = invalid ? "text-danger" : "text-success";
@@ -313,34 +329,41 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className={inputStyles}
           />
 
+          {/* Max length counter */}
           {maxLength && (
             <span className={clsx("text-xs tabular-nums transition-colors", currentValue.length >= maxLength ? "text-danger" : "text-muted-foreground")}>
               {currentValue.length}/{maxLength}
             </span>
           )}
 
+          {/* Loading spinner */}
           {loading && <Spinner className={clsx(sizeConfig[size].icon, "text-muted-foreground")} />}
 
+          {/* Password toggle */}
           {isPasswordType && !loading && (
             <IconButton onClick={() => setShowPassword(!showPassword)} ariaLabel={showPassword ? "Hide password" : "Show password"}>
               {showPassword ? <EyeOffIcon className={sizeConfig[size].icon} /> : <EyeIcon className={sizeConfig[size].icon} />}
             </IconButton>
           )}
 
+          {/* Clear button */}
           {showClearButton && (
             <IconButton onClick={handleClear} ariaLabel="Clear input">
               <ClearIcon className={sizeConfig[size].icon} />
             </IconButton>
           )}
 
+          {/* Status icon (valid/invalid) */}
           {showStatusIcon && StatusIcon && (
             <span className={clsx("flex-shrink-0", statusIconColor)}>
               <StatusIcon className={sizeConfig[size].icon} />
             </span>
           )}
 
+          {/* Custom end content */}
           {endContent && !loading && <span className="text-muted-foreground flex-shrink-0">{endContent}</span>}
 
+          {/* Underline variant animated bar */}
           {variant === "underline" && (
             <span
               className={clsx(
@@ -352,8 +375,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
 
+        {/* Helper text / Error / Success message */}
         {showHelper && (
-          <p id={`${inputId}-helper`} className={clsx("text-xs transition-colors duration-200", helperColor)}>
+          <p 
+            id={`${inputId}-helper`} 
+            role={invalid ? "alert" : undefined}
+            aria-live={invalid ? "assertive" : valid ? "polite" : undefined}
+            className={clsx("text-xs transition-colors duration-200", helperColor)}
+          >
             {helperText}
           </p>
         )}

@@ -4,6 +4,7 @@ import { Chip } from "@/components/ui/chip";
 import { TransitionButton } from "@/components/page-transition";
 import { HoverFlipButton } from "@/components/ui/hover-flip-button";
 import { HeroTextReveal } from "@/components/ui/hero-text-reveal";
+import { ScrollCodeShowcase } from "@/components/scroll-code-showcase";
 
 export default function Home() {
   return (
@@ -49,12 +50,12 @@ export default function Home() {
         />
       </div>
 
-      <section className="relative flex flex-col items-center pt-4 md:pt-8 w-full z-10">
+      <section className="relative flex flex-col items-center min-h-[90vh] w-full z-10 pt-4 md:pt-8 pb-16">
         {/* Badge */}
         <Chip
           variant="flat"
           color="secondary"
-          className="mb-6 px-4 py-2"
+          className="mb-8 px-4 py-2"
           startContent={<span className="text-lg">✦</span>}
         >
           SparkUI
@@ -74,21 +75,23 @@ export default function Home() {
               ]}
               lineDuration={1.2}
               sparkGap={40}
-              sparkRotation={0}
-              sparkChar="|"
+              
+                sparkChar="✦"
+  sparkColor="#fff"
+  sparkGlow="rgba(255, 255, 255, 0.8)"
               sparkPulse={true}
             />
           </h1>
         </div>
 
         {/* Subtitle */}
-        <p className="mt-8 text-lg md:text-2xl text-default-500 text-center max-w-3xl px-6 leading-relaxed">
+        <p className="mt-10 text-lg md:text-2xl text-default-500 text-center max-w-3xl px-6 leading-relaxed">
           Beautiful components and blocks built with Tailwind + Framer Motion.
           Fully responsive, dark mode ready, and free to use.
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-wrap gap-4 mt-12 justify-center px-6">
+        <div className="flex flex-wrap gap-4 mt-14 justify-center px-6">
           <HoverFlipButton
             href="/docs"
             text="Browse Components"
@@ -109,7 +112,7 @@ export default function Home() {
         </div>
 
         {/* Stats */}
-        <div className="flex flex-wrap gap-12 md:gap-20 mt-16 justify-center">
+        <div className="flex flex-wrap gap-12 md:gap-24 mt-20 justify-center">
           {[
             { value: "50+", label: "Components" },
             { value: "20+", label: "Blocks" },
@@ -134,6 +137,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* Scroll Code Showcase */}
+      <ScrollCodeShowcase />
     </>
   );
 }

@@ -24,13 +24,15 @@ interface BaseButtonProps {
   color?: ButtonColor;
   size?: ButtonSize;
   radius?: ButtonRadius;
-  isDisabled?: boolean;
-  isLoading?: boolean;
+  disabled?: boolean;
+  loading?: boolean;
   startContent?: React.ReactNode;
   endContent?: React.ReactNode;
   fullWidth?: boolean;
   className?: string;
   children?: React.ReactNode;
+  onMouseEnter?: React.MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
+  onMouseLeave?: React.MouseEventHandler<HTMLButtonElement | HTMLAnchorElement>;
 }
 
 type ButtonAsButton = BaseButtonProps & {
@@ -174,13 +176,15 @@ export const Button = forwardRef<
       color = "default",
       size = "md",
       radius = "md",
-      isDisabled = false,
-      isLoading = false,
+      disabled = false,
+      loading = false,
       startContent,
       endContent,
       fullWidth = false,
       className,
       children,
+      onMouseEnter,
+      onMouseLeave,
       ...props
     },
     ref,
@@ -195,7 +199,7 @@ export const Button = forwardRef<
       sizeStyles[size],
       radiusStyles[radius],
       fullWidth && "w-full",
-      (isDisabled || isLoading) && "pointer-events-none opacity-50",
+      (disabled || loading) && "pointer-events-none opacity-50",
       className,
     );
 
@@ -204,9 +208,9 @@ export const Button = forwardRef<
 
     const content = (
       <>
-        {isLoading ? <Spinner className={spinnerSize} /> : startContent}
+        {loading ? <Spinner className={spinnerSize} /> : startContent}
         {children}
-        {!isLoading && endContent}
+        {!loading && endContent}
       </>
     );
 
@@ -219,10 +223,16 @@ export const Button = forwardRef<
       WebkitBackfaceVisibility: "hidden" as const,
     };
 
+    const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+      setIsPressed(false);
+      onMouseLeave?.(e);
+    };
+
     const pressHandlers = {
       onMouseDown: () => setIsPressed(true),
       onMouseUp: () => setIsPressed(false),
-      onMouseLeave: () => setIsPressed(false),
+      onMouseLeave: handleMouseLeave,
+      onMouseEnter,
       onTouchStart: () => setIsPressed(true),
       onTouchEnd: () => setIsPressed(false),
     };
@@ -236,8 +246,8 @@ export const Button = forwardRef<
           target={anchorProps.target}
           rel={anchorProps.rel}
           role="button"
-          tabIndex={isDisabled ? -1 : 0}
-          aria-disabled={isDisabled || undefined}
+          tabIndex={disabled ? -1 : 0}
+          aria-disabled={disabled || undefined}
           className={baseStyles}
           style={scaleStyle}
           onClick={anchorProps.onClick}
@@ -255,12 +265,14 @@ export const Button = forwardRef<
         type={buttonProps.type || "button"}
         className={baseStyles}
         style={scaleStyle}
-        disabled={isDisabled || isLoading}
-        aria-disabled={isDisabled || isLoading || undefined}
-        aria-busy={isLoading || undefined}
+        disabled={disabled || loading}
+        aria-disabled={disabled || loading || undefined}
+        aria-busy={loading || undefined}
+        aria-live={loading ? "polite" : undefined}
         onClick={buttonProps.onClick}
         {...pressHandlers}
       >
+        {loading && <span className="sr-only">Loading</span>}
         {content}
       </button>
     );

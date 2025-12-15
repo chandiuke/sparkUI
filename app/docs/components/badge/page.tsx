@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { PageWrapper } from "@/components/page-transition";
 import { Badge, BadgeLabel, StatusBadge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -50,8 +49,7 @@ export default function BadgePage() {
   const [visible, setVisible] = useState(true);
 
   return (
-    <PageWrapper>
-      <div className="flex gap-16">
+          <div className="flex gap-16">
         <div className="flex-1 min-w-0 max-w-3xl">
           <header className="mb-12">
             <h1 className="text-4xl font-bold tracking-tight mb-3">Badge</h1>
@@ -620,6 +618,5 @@ export default function Example() {
           </div>
         </div>
       </div>
-    </PageWrapper>
   );
 }

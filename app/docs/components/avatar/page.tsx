@@ -1,6 +1,5 @@
 "use client";
 
-import { PageWrapper } from "@/components/page-transition";
 import { Avatar, AvatarGroup, AvatarWithBadge } from "@/components/ui/avatar";
 import { CodePreview, CodeBlock } from "@/components/docs/code-preview";
 import { TableOfContents } from "@/components/docs/toc";
@@ -24,8 +23,7 @@ const tocItems = [
 
 export default function AvatarPage() {
   return (
-    <PageWrapper>
-      <div className="flex gap-16">
+          <div className="flex gap-16">
         <div className="flex-1 min-w-0 max-w-3xl">
           <header className="mb-12">
             <h1 className="text-4xl font-bold tracking-tight mb-3">Avatar</h1>
@@ -500,6 +498,5 @@ export default function Example() {
           </div>
         </div>
       </div>
-    </PageWrapper>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { PageWrapper } from "@/components/page-transition";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { CodePreview, CodeBlock } from "@/components/docs/code-preview";
@@ -177,8 +176,7 @@ function CustomValidationDemo() {
 
 export default function TextareaPage() {
   return (
-    <PageWrapper>
-      <div className="flex gap-16">
+          <div className="flex gap-16">
         <div className="flex-1 min-w-0 max-w-3xl">
           <header className="mb-12">
             <h1 className="text-4xl font-bold tracking-tight mb-3">Textarea</h1>
@@ -655,6 +653,5 @@ const handleSubmit = (e) => {
           </div>
         </div>
       </div>
-    </PageWrapper>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { PageWrapper } from "@/components/page-transition";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { CodePreview, CodeBlock } from "@/components/docs/code-preview";
@@ -116,8 +115,7 @@ export default function DatePickerPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   return (
-    <PageWrapper>
-      <div className="flex gap-16">
+          <div className="flex gap-16">
         <div className="flex-1 min-w-0 max-w-3xl">
           <header className="mb-12">
             <h1 className="text-4xl font-bold tracking-tight mb-3">Date Picker</h1>
@@ -660,6 +658,5 @@ const getColor = () => {
           </div>
         </div>
       </div>
-    </PageWrapper>
   );
 }

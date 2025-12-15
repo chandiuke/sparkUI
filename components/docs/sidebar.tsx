@@ -66,16 +66,16 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   }, [pathname]);
 
   const handleClick = (href: string) => {
+    // Don't block navigation - just trigger animation
+    onLinkClick?.();
+    
     if (href === pathname || isAnimating) return;
 
     const clickedEl = itemRefs.current.get(href);
     const activeEl = itemRefs.current.get(pathname);
     const container = containerRef.current;
 
-    if (!clickedEl || !activeEl || !container) {
-      onLinkClick?.();
-      return;
-    }
+    if (!clickedEl || !activeEl || !container) return;
 
     const containerRect = container.getBoundingClientRect();
     const activeRect = activeEl.getBoundingClientRect();
@@ -109,7 +109,6 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     }, 150);
 
     prevPathRef.current = href;
-    onLinkClick?.();
   };
 
   return (
@@ -142,6 +141,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
                         if (el) itemRefs.current.set(item.href, el);
                       }}
                       href={item.href}
+                      prefetch={true}
                       onClick={() => handleClick(item.href)}
                       className={clsx(
                         "relative block px-3 py-1.5 text-sm rounded-lg transition-colors",

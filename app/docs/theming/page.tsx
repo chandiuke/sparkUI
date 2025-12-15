@@ -1,6 +1,5 @@
 "use client";
 
-import { PageWrapper } from "@/components/page-transition";
 import { useSparkTheme } from "@/components/theme-provider";
 import { themes } from "@/config/themes";
 import { clsx } from "clsx";
@@ -9,8 +8,7 @@ export default function ThemingPage() {
   const { theme, setTheme, radius, setRadius } = useSparkTheme();
 
   return (
-    <PageWrapper>
-      <div className="max-w-4xl">
+          <div className="max-w-4xl">
         <h1 className="text-4xl font-bold mb-4">Theming</h1>
         <p className="text-lg text-muted-foreground mb-8">
           SparkUI uses CSS variables for theming. Customize colors, radius, and more.
@@ -192,6 +190,5 @@ module.exports = {
           </pre>
         </section>
       </div>
-    </PageWrapper>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { PageWrapper } from "@/components/page-transition";
 import { Button } from "@/components/ui/button";
 import { CodePreview, CodeBlock } from "@/components/docs/code-preview";
 import { TableOfContents } from "@/components/docs/toc";
@@ -35,8 +34,7 @@ export default function ButtonPage() {
   };
 
   return (
-    <PageWrapper>
-      <div className="flex gap-16">
+    <div className="flex gap-16">
         {/* Main Content */}
         <div className="flex-1 min-w-0 max-w-3xl">
           {/* Header */}
@@ -539,6 +537,5 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
           </div>
         </div>
       </div>
-    </PageWrapper>
   );
 }

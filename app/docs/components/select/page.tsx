@@ -1,6 +1,5 @@
 "use client";
 
-import { PageWrapper } from "@/components/page-transition";
 import { Select, MultiSelect } from "@/components/ui/select";
 import { CodePreview, CodeBlock } from "@/components/docs/code-preview";
 import { TableOfContents } from "@/components/docs/toc";
@@ -69,8 +68,7 @@ export default function SelectPage() {
   const [multiValue, setMultiValue] = useState<string[]>([]);
 
   return (
-    <PageWrapper>
-      <div className="flex gap-10">
+          <div className="flex gap-10">
         <div className="flex-1 max-w-3xl">
           <h1 className="text-4xl font-bold mb-4">Select</h1>
           <p className="text-lg text-muted-foreground mb-8">
@@ -519,6 +517,5 @@ const fruits = [
 
         <TableOfContents items={tocItems} />
       </div>
-    </PageWrapper>
   );
 }

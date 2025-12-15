@@ -1,7 +1,6 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { PageWrapper } from "@/components/page-transition";
 
 export default function DocPage() {
   const params = useParams();
@@ -12,11 +11,9 @@ export default function DocPage() {
     .join(" ");
 
   return (
-    <PageWrapper>
-      <div>
-        <h1 className="text-4xl font-bold mb-4">{title}</h1>
-        <p className="text-default-500">This page is coming soon...</p>
-      </div>
-    </PageWrapper>
+    <div>
+      <h1 className="text-4xl font-bold mb-4">{title}</h1>
+      <p className="text-default-500">This page is coming soon...</p>
+    </div>
   );
 }

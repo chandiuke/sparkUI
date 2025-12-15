@@ -1,11 +1,9 @@
 "use client";
 
-import { PageWrapper } from "@/components/page-transition";
 
 export default function DocsPage() {
   return (
-    <PageWrapper>
-      <div className="prose prose-invert max-w-none">
+          <div className="prose prose-invert max-w-none">
         <h1 className="text-4xl font-bold mb-4">Introduction</h1>
         <p className="text-lg text-default-500 mb-8">
           Welcome to SparkUI — a collection of premium UI components built with
@@ -34,6 +32,5 @@ export default function DocsPage() {
           directly into your project.
         </p>
       </div>
-    </PageWrapper>
   );
 }

@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, ReactNode } from "react";
-import { Highlight, themes } from "prism-react-renderer";
-import { motion, AnimatePresence } from "framer-motion"; // Keep for CopyButton animation
-import { Copy, Check, Eye, Code2 } from "lucide-react";
+import React, { useState, ReactNode, useRef, useEffect, memo, lazy, Suspense } from "react";
 import { clsx } from "clsx";
+
+// Lazy load the heavy syntax highlighter - only loads when code tab is clicked
+const CodeHighlighter = lazy(() => 
+  import("./code-highlighter").then(mod => ({ default: mod.default }))
+);
 
 interface CodePreviewProps {
   preview: ReactNode;
@@ -21,6 +23,45 @@ interface CodeBlockProps {
   showCopy?: boolean;
 }
 
+// Simple icons to avoid lucide-react import
+const CopyIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+  </svg>
+);
+
+const EyeIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+  </svg>
+);
+
+const CodeIcon = () => (
+  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+  </svg>
+);
+
+// Code loading placeholder
+function CodePlaceholder() {
+  return (
+    <div className="p-4 bg-[rgb(17,17,17)] min-h-[100px]">
+      <div className="space-y-2">
+        <div className="h-4 bg-white/5 rounded w-3/4 animate-pulse" />
+        <div className="h-4 bg-white/5 rounded w-1/2 animate-pulse" />
+        <div className="h-4 bg-white/5 rounded w-2/3 animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 function CopyButton({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -33,37 +74,11 @@ function CopyButton({ code }: { code: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200 transition-all overflow-hidden"
+      className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200 transition-all"
       aria-label="Copy code"
       suppressHydrationWarning
     >
-      <div className="relative w-4 h-4">
-        <AnimatePresence mode="wait">
-          {copied ? (
-            <motion.div
-              key="check"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="absolute inset-0 text-green-400"
-            >
-              <Check className="w-4 h-4" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="copy"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="absolute inset-0"
-            >
-              <Copy className="w-4 h-4" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      {copied ? <CheckIcon /> : <CopyIcon />}
     </button>
   );
 }
@@ -81,86 +96,32 @@ function LanguageToggle({
       className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-xs font-mono text-gray-400 hover:text-gray-200 transition-all"
       suppressHydrationWarning
     >
-      <span className={language === "tsx" ? "text-blue-400" : "text-gray-500"}>
-        TS
-      </span>
+      <span className={language === "tsx" ? "text-blue-400" : "text-gray-500"}>TS</span>
       <span className="text-gray-600">/</span>
-      <span className={language === "jsx" ? "text-yellow-400" : "text-gray-500"}>
-        JS
-      </span>
+      <span className={language === "jsx" ? "text-yellow-400" : "text-gray-500"}>JS</span>
     </button>
   );
 }
 
-function CodeRenderer({
-  code,
-  language,
-}: {
-  code: string;
-  language: string;
-}) {
-  return (
-    <Highlight theme={themes.nightOwl} code={code.trim()} language={language}>
-      {({
-        className: preClassName,
-        style,
-        tokens,
-        getLineProps,
-        getTokenProps,
-      }) => (
-        <pre
-          className={clsx(
-            preClassName,
-            "p-4 overflow-x-auto text-sm leading-relaxed"
-          )}
-          style={{ ...style, background: "rgb(17, 17, 17)" }}
-        >
-          {tokens.map((line, i) => (
-            <div key={i} {...getLineProps({ line })}>
-              <span className="inline-block w-8 text-gray-500 select-none text-right mr-4">
-                {i + 1}
-              </span>
-              {line.map((token, key) => (
-                <span key={key} {...getTokenProps({ token })} />
-              ))}
-            </div>
-          ))}
-        </pre>
-      )}
-    </Highlight>
-  );
-}
 
 // Auto-convert TSX to JSX by removing type annotations
 function convertToJsx(tsxCode: string): string {
   return tsxCode
-    // Remove type imports
     .replace(/import\s+type\s+.*?from\s+['"].*?['"];?\n?/g, "")
-    // Remove type-only imports from combined imports
     .replace(/,?\s*type\s+\w+/g, "")
-    // Remove interface definitions
     .replace(/interface\s+\w+\s*\{[\s\S]*?\}\n*/g, "")
-    // Remove type definitions  
     .replace(/type\s+\w+\s*=[\s\S]*?;\n*/g, "")
-    // Remove generic type params from hooks: useState<string[]>([]) -> useState([])
     .replace(/(useState|useRef|useCallback|useMemo|useContext)<[^>]+>/g, "$1")
-    // Remove type assertions: as Type or as Type[]
     .replace(/\s+as\s+\w+(\[\])?/g, "")
-    // Remove function return type annotations: ): ReactNode => or ): void {
     .replace(/\):\s*[A-Za-z\[\]<>,\s\|\.]+\s*(?==>|\{)/g, ") ")
-    // Remove variable type annotations: const x: Type = or let x: Type =
     .replace(/(const|let|var)\s+(\w+):\s*[A-Za-z\[\]<>,\s\|\.]+\s*=/g, "$1 $2 =")
-    // Remove param type annotations in arrow functions: (x: Type) => or (x: Type, y: Type) =>
-    .replace(/\(([^)]*)\)\s*=>/g, (match, params) => {
+    .replace(/\(([^)]*)\)\s*=>/g, (_, params) => {
       const cleanParams = params.replace(/:\s*[A-Za-z\[\]<>,\s\|\.]+/g, "");
       return `(${cleanParams}) =>`;
     })
-    // Clean up empty imports
     .replace(/import\s*\{\s*\}\s*from\s*['"].*?['"];?\n?/g, "")
-    // Clean up extra commas
     .replace(/\{\s*,/g, "{")
     .replace(/,\s*\}/g, "}")
-    // Clean up extra blank lines
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -174,7 +135,6 @@ export function CodeBlock({
 }: CodeBlockProps) {
   const [currentLang, setCurrentLang] = useState<"tsx" | "jsx">("tsx");
   const hasJsx = jsxCode !== undefined || language === "tsx";
-
   const displayCode = currentLang === "jsx" ? (jsxCode || convertToJsx(code)) : code;
 
   return (
@@ -188,12 +148,14 @@ export function CodeBlock({
         )}
         {showCopy && <CopyButton code={displayCode} />}
       </div>
-      <CodeRenderer code={displayCode} language={currentLang === "jsx" ? "jsx" : language} />
+      <Suspense fallback={<CodePlaceholder />}>
+        <CodeHighlighter code={displayCode} language={currentLang === "jsx" ? "jsx" : language} />
+      </Suspense>
     </div>
   );
 }
 
-// Animated tabs with horizontal shrinking indicator
+// Animated tabs - simplified
 function AnimatedTabs({
   activeTab,
   onTabChange,
@@ -201,128 +163,60 @@ function AnimatedTabs({
   activeTab: "preview" | "code";
   onTabChange: (tab: "preview" | "code") => void;
 }) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const tabRefs = React.useRef<Map<string, HTMLButtonElement>>(new Map());
-  const [indicatorStyle, setIndicatorStyle] = React.useState({ left: 4, width: 82 });
-  const [isAnimating, setIsAnimating] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 4, width: 82 });
+  const [mounted, setMounted] = useState(false);
 
   const tabs = [
-    { id: "preview" as const, label: "Preview", icon: Eye },
-    { id: "code" as const, label: "Code", icon: Code2 },
+    { id: "preview" as const, label: "Preview", Icon: EyeIcon },
+    { id: "code" as const, label: "Code", Icon: CodeIcon },
   ];
 
-  // Initialize indicator position after mount
-  React.useEffect(() => {
+  useEffect(() => {
     setMounted(true);
     const updateIndicator = () => {
       const container = containerRef.current;
       const activeButton = tabRefs.current.get(activeTab);
       if (!container || !activeButton) return;
-
       const containerRect = container.getBoundingClientRect();
       const buttonRect = activeButton.getBoundingClientRect();
-
       setIndicatorStyle({
         left: buttonRect.left - containerRect.left,
         width: buttonRect.width,
       });
     };
-
     requestAnimationFrame(updateIndicator);
   }, [activeTab]);
-
-  const handleTabClick = (tabId: "preview" | "code") => {
-    if (tabId === activeTab || isAnimating) return;
-
-    const container = containerRef.current;
-    const currentButton = tabRefs.current.get(activeTab);
-    const targetButton = tabRefs.current.get(tabId);
-
-    if (!container || !currentButton || !targetButton) {
-      onTabChange(tabId);
-      return;
-    }
-
-    const containerRect = container.getBoundingClientRect();
-    const currentRect = currentButton.getBoundingClientRect();
-    const targetRect = targetButton.getBoundingClientRect();
-
-    const currentLeft = currentRect.left - containerRect.left;
-    const targetLeft = targetRect.left - containerRect.left;
-    const currentRight = currentLeft + currentRect.width;
-    const targetRight = targetLeft + targetRect.width;
-
-    // Determine direction: moving right (preview → code) or left (code → preview)
-    const movingRight = targetLeft > currentLeft;
-
-    setIsAnimating(true);
-
-    // Phase 1: Expand - leading edge moves first, trailing edge stays
-    if (movingRight) {
-      // Moving right: right edge expands to target, left edge stays
-      setIndicatorStyle({
-        left: currentLeft,
-        width: targetRight - currentLeft,
-      });
-    } else {
-      // Moving left: left edge expands to target, right edge stays
-      setIndicatorStyle({
-        left: targetLeft,
-        width: currentRight - targetLeft,
-      });
-    }
-
-    // Phase 2: Shrink - trailing edge catches up
-    setTimeout(() => {
-      setIndicatorStyle({
-        left: targetLeft,
-        width: targetRect.width,
-      });
-      onTabChange(tabId);
-      setTimeout(() => setIsAnimating(false), 150);
-    }, 150);
-  };
 
   return (
     <div 
       ref={containerRef}
       className="relative flex items-center gap-0.5 p-1 bg-muted/50 rounded-t-xl border border-b-0 border-border w-fit"
     >
-      {/* Animated indicator */}
-      <motion.div
-        className="absolute top-1 bottom-1 bg-background rounded-lg shadow-sm"
-        initial={false}
-        animate={{
-          left: indicatorStyle.left,
-          width: indicatorStyle.width,
-          opacity: mounted ? 1 : 0,
-        }}
-        transition={{ duration: 0.15, ease: "easeOut" }}
+      <div
+        className="absolute top-1 bottom-1 bg-background rounded-lg shadow-sm transition-all duration-150 ease-out"
+        style={{ left: indicatorStyle.left, width: indicatorStyle.width, opacity: mounted ? 1 : 0 }}
       />
-
       {tabs.map((tab) => (
         <button
           key={tab.id}
-          ref={(el) => {
-            if (el) tabRefs.current.set(tab.id, el);
-          }}
-          onClick={() => handleTabClick(tab.id)}
+          ref={(el) => { if (el) tabRefs.current.set(tab.id, el); }}
+          onClick={() => onTabChange(tab.id)}
           suppressHydrationWarning
           className={clsx(
             "relative z-10 flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors",
-            activeTab === tab.id
-              ? "text-foreground"
-              : "text-muted-foreground hover:text-foreground"
+            activeTab === tab.id ? "text-foreground" : "text-muted-foreground hover:text-foreground"
           )}
         >
-          <tab.icon className="w-3.5 h-3.5" />
+          <tab.Icon />
           {tab.label}
         </button>
       ))}
     </div>
   );
 }
+
 
 export function CodePreview({
   preview,
@@ -332,23 +226,25 @@ export function CodePreview({
 }: CodePreviewProps) {
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
   const [currentLang, setCurrentLang] = useState<"tsx" | "jsx">("tsx");
+  const [hasLoadedCode, setHasLoadedCode] = useState(false);
 
   const displayCode = currentLang === "jsx" ? (jsxCode || convertToJsx(code)) : code;
 
+  // Only load syntax highlighter when code tab is clicked
+  const handleTabChange = (tab: "preview" | "code") => {
+    setActiveTab(tab);
+    if (tab === "code") setHasLoadedCode(true);
+  };
+
   return (
     <div className={clsx("space-y-0", className)}>
-      {/* Animated Tabs */}
-      <AnimatedTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {/* Content */}
+      <AnimatedTabs activeTab={activeTab} onTabChange={handleTabChange} />
       <div className={clsx(
         "rounded-xl rounded-tl-none border border-border",
         activeTab === "code" && "overflow-hidden"
       )}>
         {activeTab === "preview" ? (
-          <div className="p-6 bg-card/50 min-h-[120px]">
-            {preview}
-          </div>
+          <div className="p-6 bg-card/50 min-h-[120px]">{preview}</div>
         ) : (
           <div className="relative">
             <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
@@ -358,10 +254,72 @@ export function CodePreview({
               />
               <CopyButton code={displayCode} />
             </div>
-            <CodeRenderer code={displayCode} language={currentLang} />
+            {hasLoadedCode && (
+              <Suspense fallback={<CodePlaceholder />}>
+                <CodeHighlighter code={displayCode} language={currentLang} />
+              </Suspense>
+            )}
           </div>
         )}
       </div>
     </div>
   );
 }
+
+// Lazy-loaded code block that only renders when visible
+export function LazyCodeBlock({
+  code,
+  jsxCode,
+  language = "tsx",
+  className,
+  showCopy = true,
+}: CodeBlockProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [currentLang, setCurrentLang] = useState<"tsx" | "jsx">("tsx");
+  const hasJsx = jsxCode !== undefined || language === "tsx";
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "100px" }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  const displayCode = currentLang === "jsx" ? (jsxCode || convertToJsx(code)) : code;
+
+  return (
+    <div ref={ref} className={clsx("relative group rounded-xl overflow-hidden", className)}>
+      {isVisible ? (
+        <>
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+            {hasJsx && (
+              <LanguageToggle
+                language={currentLang}
+                onToggle={() => setCurrentLang(currentLang === "tsx" ? "jsx" : "tsx")}
+              />
+            )}
+            {showCopy && <CopyButton code={displayCode} />}
+          </div>
+          <Suspense fallback={<CodePlaceholder />}>
+            <CodeHighlighter code={displayCode} language={currentLang === "jsx" ? "jsx" : language} />
+          </Suspense>
+        </>
+      ) : (
+        <div className="h-32 bg-[rgb(17,17,17)] animate-pulse" />
+      )}
+    </div>
+  );
+}
+
+export const MemoizedCodePreview = memo(CodePreview);
+export const MemoizedCodeBlock = memo(CodeBlock);

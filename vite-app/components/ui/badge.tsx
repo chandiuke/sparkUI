@@ -23,6 +23,7 @@ interface BadgeProps {
   badgeClassName?: string;
 }
 
+// Standalone badge (no children wrapper)
 interface StandaloneBadgeProps {
   children: React.ReactNode;
   variant?: BadgeVariant;
@@ -122,6 +123,8 @@ const standaloneSizeStyles = {
   lg: "h-7 text-sm px-3 gap-2",
 };
 
+
+// Badge wrapper component (wraps around content like Avatar)
 export function Badge({
   children,
   content,
@@ -138,6 +141,7 @@ export function Badge({
   className,
   badgeClassName,
 }: BadgeProps) {
+  // Handle numeric content
   const displayContent = typeof content === "number" 
     ? (content === 0 && !showZero ? null : content > max ? `${max}+` : content)
     : content;
@@ -149,6 +153,7 @@ export function Badge({
     return null;
   }
 
+  // Use ping color based on variant - glass uses flat style for ping
   const pingColorClass = variant === "glass" 
     ? variantStyles.flat[color] 
     : variantStyles.solid[color];
@@ -170,6 +175,7 @@ export function Badge({
             badgeClassName
           )}
         >
+          {/* Ping animation */}
           {ping && (
             <span
               className={clsx(
@@ -186,6 +192,7 @@ export function Badge({
   );
 }
 
+// Standalone badge component (inline badge/tag)
 export function BadgeLabel({
   children,
   variant = "solid",
@@ -211,6 +218,7 @@ export function BadgeLabel({
         className
       )}
     >
+      {/* Dot indicator */}
       {dot && (
         <span className="relative flex h-2 w-2">
           {ping && (
@@ -231,9 +239,12 @@ export function BadgeLabel({
       )}
       
       {startContent}
+      
       <span className="truncate">{children}</span>
+      
       {endContent}
       
+      {/* Close button */}
       {onClose && (
         <button
           type="button"
@@ -246,6 +257,68 @@ export function BadgeLabel({
           </svg>
         </button>
       )}
+    </span>
+  );
+}
+
+// Status badge with predefined styles
+type StatusType = "online" | "offline" | "away" | "busy" | "invisible";
+
+interface StatusBadgeProps {
+  status: StatusType;
+  size?: BadgeSize;
+  showLabel?: boolean;
+  className?: string;
+}
+
+const statusConfig: Record<StatusType, { color: BadgeColor; label: string }> = {
+  online: { color: "success", label: "Online" },
+  offline: { color: "default", label: "Offline" },
+  away: { color: "warning", label: "Away" },
+  busy: { color: "danger", label: "Busy" },
+  invisible: { color: "default", label: "Invisible" },
+};
+
+export function StatusBadge({ status, size = "md", showLabel = false, className }: StatusBadgeProps) {
+  const config = statusConfig[status];
+  
+  if (showLabel) {
+    return (
+      <BadgeLabel
+        variant="flat"
+        color={config.color}
+        size={size}
+        dot
+        ping={status === "online"}
+        className={className}
+      >
+        {config.label}
+      </BadgeLabel>
+    );
+  }
+
+  return (
+    <span
+      className={clsx(
+        "relative inline-flex",
+        dotSizeStyles[size],
+        className
+      )}
+    >
+      {status === "online" && (
+        <span
+          className={clsx(
+            "absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping",
+            variantStyles.dot[config.color]
+          )}
+        />
+      )}
+      <span
+        className={clsx(
+          "relative inline-flex rounded-full w-full h-full",
+          variantStyles.dot[config.color]
+        )}
+      />
     </span>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { PageWrapper } from "@/components/page-transition";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useRef } from "react";
@@ -30,8 +29,7 @@ export default function AccessibilityPage() {
   };
 
   return (
-    <PageWrapper>
-      <div className="max-w-4xl">
+          <div className="max-w-4xl">
         <h1 className="text-4xl font-bold mb-4">Accessibility</h1>
         <p className="text-lg text-muted-foreground mb-8">
           SparkUI is built with accessibility in mind. All components include proper ARIA attributes, 
@@ -364,6 +362,5 @@ export default function AccessibilityPage() {
           </div>
         </section>
       </div>
-    </PageWrapper>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { PageWrapper } from "@/components/page-transition";
 import {
   Dropdown,
   DropdownTrigger,
@@ -86,8 +85,7 @@ export default function DropdownPage() {
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
-    <PageWrapper>
-      <div className="flex gap-16">
+          <div className="flex gap-16">
         {/* Main Content */}
         <div className="flex-1 min-w-0 max-w-3xl">
           {/* Header */}
@@ -897,6 +895,5 @@ export default function DropdownPage() {
           </div>
         </div>
       </div>
-    </PageWrapper>
   );
 }
