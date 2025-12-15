@@ -1,36 +1,8 @@
-"use client";
-
 import React, { useState, useRef, useEffect, useId, useCallback, createContext, useContext } from "react";
 import { clsx } from "clsx";
 
 // ============ Types ============
-type DropdownPlacement = "bottom" | "bottom-start" | "bottom-end" | "top" | "top-start" | "top-end" | "left" | "left-start" | "left-end" | "right" | "right-start" | "right-end";
-type DropdownTrigger = "click" | "hover" | "context";
-type DropdownColor = "default" | "primary" | "secondary" | "success" | "warning" | "danger";
-
-interface HighlightPosition {
-  top: number;
-  height: number;
-  highlightClass: string;
-}
-
-interface DropdownContextValue {
-  isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
-  triggerId: string;
-  menuId: string;
-  activeIndex: number;
-  setActiveIndex: (index: number) => void;
-  color: DropdownColor;
-  colorStyles: typeof colorClasses.default;
-  closeOnSelect: boolean;
-  registerItem: (index: number, disabled: boolean) => void;
-  items: Map<number, boolean>;
-  highlightPosition: HighlightPosition | null;
-  setHighlightPosition: (pos: HighlightPosition | null) => void;
-}
-
-const DropdownContext = createContext<DropdownContextValue | null>(null);
+const DropdownContext = createContext(null);
 
 function useDropdown() {
   const context = useContext(DropdownContext);
@@ -62,20 +34,6 @@ const colorClasses = {
 };
 
 // ============ Dropdown Root ============
-interface DropdownProps {
-  children: React.ReactNode;
-  placement?: DropdownPlacement;
-  trigger?: DropdownTrigger;
-  color?: DropdownColor;
-  offset?: number;
-  closeOnSelect?: boolean;
-  closeOnOutsideClick?: boolean;
-  disabled?: boolean;
-  defaultOpen?: boolean;
-  isOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}
-
 export function Dropdown({
   children,
   placement = "bottom-start",
@@ -92,8 +50,8 @@ export function Dropdown({
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [items] = useState(() => new Map<number, boolean>());
-  const [highlightPosition, setHighlightPosition] = useState<HighlightPosition | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [highlightPosition, setHighlightPosition] = useState(null);
+  const containerRef = useRef(null);
   const triggerId = useId();
   const menuId = useId();
 
@@ -114,8 +72,8 @@ export function Dropdown({
   // Close on outside click
   useEffect(() => {
     if (!closeOnOutsideClick || !isOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+    const handleClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
         setIsOpen(false);
       }
     };
@@ -126,14 +84,14 @@ export function Dropdown({
   // Close on escape
   useEffect(() => {
     if (!isOpen) return;
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleEscape = (e) => {
       if (e.key === "Escape") setIsOpen(false);
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, setIsOpen]);
 
-  const hoverTimeoutRef = useRef<ReturnType<typeof se
+  const hoverTimeoutRef = useRef();
 
   const handleMouseEnter = () => {
     if (trigger === "hover") {
@@ -155,7 +113,7 @@ export function Dropdown({
   const colorStyles = colorClasses[color];
 
   return (
-    <DropdownContext.Provider value={{ isOpen, setIsOpen, triggerId, menuId, activeIndex, setActiveIndex, color, colorStyles, closeOnSelect, registerItem, items, highlightPosition, setHighlightPosition }}>
+    
       <div 
         ref={containerRef} 
         className="relative inline-flex"
@@ -172,14 +130,9 @@ export function Dropdown({
 }
 
 // ============ Dropdown Trigger ============
-interface DropdownTriggerProps {
-  children: React.ReactNode;
-  className?: string;
-}
-
 export function DropdownTrigger({ children, className }: DropdownTriggerProps) {
   const { isOpen, setIsOpen, triggerId, menuId } = useDropdown();
-  const parentRef = useRef<HTMLDivElement>(null);
+  const parentRef = useRef(null);
 
   const trigger = parentRef.current?.parentElement?.dataset.trigger || "click";
 
@@ -187,7 +140,7 @@ export function DropdownTrigger({ children, className }: DropdownTriggerProps) {
     if (trigger === "click") setIsOpen(!isOpen);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setIsOpen(!isOpen);
@@ -201,19 +154,19 @@ export function DropdownTrigger({ children, className }: DropdownTriggerProps) {
   if (React.isValidElement(children)) {
     return (
       <div ref={parentRef} className={className}>
-        {React.cloneElement(children as React.ReactElement<any>, {
+        {React.cloneElement(children, {
           id: triggerId,
           "aria-haspopup": "menu",
           "aria-expanded": isOpen,
           "aria-controls": isOpen ? menuId : undefined,
-          onClick: (e: React.MouseEvent) => {
+          onClick: (e) => {
             handleClick();
             // Call original onClick if exists
-            (children.props as any)?.onClick?.(e);
+            (children.props)?.onClick?.(e);
           },
-          onKeyDown: (e: React.KeyboardEvent) => {
+          onKeyDown: (e) => {
             handleKeyDown(e);
-            (children.props as any)?.onKeyDown?.(e);
+            (children.props)?.onKeyDown?.(e);
           },
         })}
       </div>
@@ -240,20 +193,7 @@ export function DropdownTrigger({ children, className }: DropdownTriggerProps) {
 }
 
 // ============ Split Button ============
-type SplitButtonVariant = "solid" | "bordered" | "flat" | "ghost";
-type SplitButtonSize = "sm" | "md" | "lg";
-
-interface DropdownSplitButtonProps {
-  children: React.ReactNode;
-  color?: DropdownColor;
-  variant?: SplitButtonVariant;
-  size?: SplitButtonSize;
-  disabled?: boolean;
-  onClick?: () => void;
-  className?: string;
-}
-
-const splitButtonColors: Record<DropdownColor, Record<SplitButtonVariant, string>> = {
+const splitButtonColors: Record> = {
   default: {
     solid: "bg-muted text-foreground hover:bg-muted/80",
     bordered: "border-2 border-border text-foreground hover:bg-muted/50",
@@ -292,7 +232,7 @@ const splitButtonColors: Record<DropdownColor, Record<SplitButtonVariant, string
   },
 };
 
-const splitButtonSizes: Record<SplitButtonSize, { main: string; trigger: string; icon: string }> = {
+const splitButtonSizes = {
   sm: { main: "h-8 px-3 text-sm", trigger: "h-8 w-8", icon: "w-4 h-4" },
   md: { main: "h-10 px-4 text-sm", trigger: "h-10 w-10", icon: "w-4 h-4" },
   lg: { main: "h-12 px-6 text-base", trigger: "h-12 w-12", icon: "w-5 h-5" },
@@ -308,14 +248,14 @@ export function DropdownSplitButton({
   className,
 }: DropdownSplitButtonProps) {
   const { isOpen, setIsOpen, triggerId, menuId } = useDropdown();
-  const parentRef = useRef<HTMLDivElement>(null);
+  const parentRef = useRef(null);
   const trigger = parentRef.current?.parentElement?.dataset.trigger || "click";
 
   const handleTriggerClick = () => {
     if (trigger === "click") setIsOpen(!isOpen);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setIsOpen(!isOpen);
@@ -374,22 +314,14 @@ export function DropdownSplitButton({
           sizeStyle.trigger
         )}
       >
-        <ChevronDownIcon className={clsx(sizeStyle.icon, "transition-transform duration-200", isOpen && "rotate-180")} />
+        
       </button>
     </div>
   );
 }
 
 // ============ Dropdown Menu ============
-type DropdownMenuVariant = "default" | "solid" | "flat" | "bordered";
-
-interface DropdownMenuProps {
-  children: React.ReactNode;
-  variant?: DropdownMenuVariant;
-  className?: string;
-}
-
-const menuVariantStyles: Record<DropdownColor, Record<DropdownMenuVariant, string>> = {
+const menuVariantStyles: Record> = {
   default: {
     default: "bg-card border border-border",
     solid: "bg-foreground text-background",
@@ -430,9 +362,9 @@ const menuVariantStyles: Record<DropdownColor, Record<DropdownMenuVariant, strin
 
 export function DropdownMenu({ children, variant = "default", className }: DropdownMenuProps) {
   const { isOpen, menuId, triggerId, activeIndex, setActiveIndex, items, highlightPosition, setHighlightPosition, color } = useDropdown();
-  const menuRef = useRef<HTMLDivElement>(null);
-  const parentRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef(null);
+  const parentRef = useRef(null);
+  const listRef = useRef(null);
 
   const placement = parentRef.current?.parentElement?.dataset.placement || "bottom-start";
   const offset = Number(parentRef.current?.parentElement?.dataset.offset) || 4;
@@ -445,7 +377,7 @@ export function DropdownMenu({ children, variant = "default", className }: Dropd
   const showHighlight = activeIndex !== -1 && highlightPosition !== null;
 
   // Keyboard navigation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e) => {
     const enabledItems = Array.from(items.entries()).filter(([, disabled]) => !disabled).map(([idx]) => idx).sort((a, b) => a - b);
     if (enabledItems.length === 0) return;
 
@@ -474,7 +406,7 @@ export function DropdownMenu({ children, variant = "default", className }: Dropd
   }, [activeIndex, setActiveIndex, items]);
 
   // Placement styles
-  const placementStyles: Record<string, string> = {
+  const placementStyles = {
     "bottom": "top-full left-1/2 -translate-x-1/2",
     "bottom-start": "top-full left-0",
     "bottom-end": "top-full right-0",
@@ -489,7 +421,7 @@ export function DropdownMenu({ children, variant = "default", className }: Dropd
     "right-end": "left-full bottom-0",
   };
 
-  const animationOrigin: Record<string, string> = {
+  const animationOrigin = {
     "bottom": "origin-top",
     "bottom-start": "origin-top-left",
     "bottom-end": "origin-top-right",
@@ -553,22 +485,6 @@ export function DropdownMenu({ children, variant = "default", className }: Dropd
 }
 
 // ============ Dropdown Item ============
-interface DropdownItemProps {
-  children: React.ReactNode;
-  color?: DropdownColor;
-  icon?: React.ReactNode;
-  endContent?: React.ReactNode;
-  shortcut?: string;
-  description?: string;
-  disabled?: boolean;
-  danger?: boolean;
-  selected?: boolean;
-  showCheck?: boolean;
-  href?: string;
-  onClick?: () => void;
-  className?: string;
-}
-
 let itemCounter = 0;
 
 export function DropdownItem({
@@ -588,7 +504,7 @@ export function DropdownItem({
 }: DropdownItemProps) {
   const { setIsOpen, activeIndex, setActiveIndex, colorStyles, closeOnSelect, registerItem, setHighlightPosition } = useDropdown();
   const [index] = useState(() => itemCounter++);
-  const itemRef = useRef<HTMLDivElement>(null);
+  const itemRef = useRef(null);
 
   const isHighlighted = activeIndex === index;
   // Priority: danger > item color > dropdown color
@@ -617,7 +533,7 @@ export function DropdownItem({
     if (closeOnSelect) setIsOpen(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e) => {
     if (disabled) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -633,7 +549,7 @@ export function DropdownItem({
       {/* Check for selected */}
       {showCheck && (
         <span className={clsx("shrink-0 w-4 h-4", selected ? itemColorStyles.accent : "opacity-0")}>
-          <CheckIcon className="w-4 h-4" />
+          
         </span>
       )}
 
@@ -661,7 +577,7 @@ export function DropdownItem({
   if (href && !disabled) {
     return (
       <a
-        ref={itemRef as any}
+        ref={itemRef}
         href={href}
         role="menuitem"
         tabIndex={-1}
@@ -693,16 +609,10 @@ export function DropdownItem({
 }
 
 // ============ Dropdown Section ============
-interface DropdownSectionProps {
-  children: React.ReactNode;
-  title?: string;
-  showDivider?: boolean;
-}
-
 export function DropdownSection({ children, title, showDivider = true }: DropdownSectionProps) {
   return (
     <div role="group">
-      {showDivider && <DropdownDivider />}
+      {showDivider && }
       {title && (
         <div className="px-4 py-1.5 text-xs font-medium text-muted-foreground">
           {title}

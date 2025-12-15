@@ -106,6 +106,22 @@ export const registry: Record<string, ComponentDefinition> = {
     devDependencies: [],
     registryDependencies: [],
   },
+  navbar: {
+    name: "navbar",
+    description: "A responsive navigation bar with mobile menu support",
+    files: ["components/ui/navbar.tsx"],
+    dependencies: ["clsx", "framer-motion"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
+  "hero-text-reveal": {
+    name: "hero-text-reveal",
+    description: "Animated text reveal with spark effect for hero sections",
+    files: ["components/ui/hero-text-reveal.tsx"],
+    dependencies: ["framer-motion"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
 };
 
 export const baseFiles = {
