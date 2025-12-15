@@ -147,15 +147,17 @@ export async function add(componentName: string, options: AddOptions) {
           content = removeUseClient(content);
         }
         
-        // Always keep as .tsx - modern tooling (Vite, etc.) handles it fine
-        // TypeScript components work in JS projects with proper config
-        await fs.ensureDir(path.dirname(targetPath));
-        await fs.writeFile(targetPath, content, "utf-8");
-        spinner.succeed(`Created ${path.relative(root, targetPath)}`);
-        
+        // Determine final file path and content based on TypeScript support
+        let finalPath = targetPath;
         if (!isTs) {
-          log.info("Tip: Components are TypeScript. Add tsconfig.json or configure your bundler to handle .tsx files.");
+          // Convert to JSX for JavaScript projects
+          content = convertToJsx(content);
+          finalPath = targetPath.replace(/\.tsx$/, ".jsx");
         }
+        
+        await fs.ensureDir(path.dirname(finalPath));
+        await fs.writeFile(finalPath, content, "utf-8");
+        spinner.succeed(`Created ${path.relative(root, finalPath)}`);
       } catch (fetchError) {
         spinner.fail(`Failed to fetch ${file}`);
         log.error("Make sure you have internet connection or the component exists in the registry.");
@@ -188,6 +190,7 @@ export async function add(componentName: string, options: AddOptions) {
   log.success(chalk.bold(`${component.name} added!`));
   console.log("");
   console.log("Import it:");
+  const ext = isTs ? "" : "";  // Modern bundlers don't need extension in imports
   console.log(chalk.cyan(`  import { ${capitalize(component.name)} } from "@/components/ui/${component.name}"`));
   console.log("");
 }
@@ -196,11 +199,63 @@ function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// For JavaScript projects, we keep the .tsx file as-is
-// Modern JS tooling (Vite, etc.) can handle TSX files
-// This avoids complex regex conversion that can break code
+// Convert TypeScript to JavaScript by stripping type annotations
 function convertToJsx(tsxCode: string): string {
-  // Just return the code as-is - TSX works in JS projects with proper config
-  // The main thing we do is remove "use client" for non-Next projects (done separately)
-  return tsxCode;
+  let code = tsxCode;
+  
+  // Remove "use client" directive
+  code = code.replace(/^["']use client["'];?\s*\n?/gm, "");
+  
+  // Remove import type statements entirely
+  code = code.replace(/^import\s+type\s+[^;]+;\s*\n?/gm, "");
+  
+  // Remove type keyword from mixed imports: import { type Foo, Bar } -> import { Bar }
+  code = code.replace(/{\s*type\s+\w+\s*,\s*/g, "{ ");
+  code = code.replace(/,\s*type\s+\w+\s*}/g, " }");
+  code = code.replace(/,\s*type\s+\w+\s*,/g, ",");
+  
+  // Remove interface blocks (multiline)
+  code = code.replace(/^interface\s+\w+[^{]*\{[^}]*\}\s*\n?/gm, "");
+  
+  // Remove type alias declarations
+  code = code.replace(/^type\s+\w+[^=]*=[^;]+;\s*\n?/gm, "");
+  
+  // Remove generic type parameters: <T>, <T, U>, <T extends X>
+  code = code.replace(/<[A-Z][^>]*>/g, "");
+  
+  // Remove type annotations after colons (but not in objects/ternaries)
+  // Parameter types: (param: Type) -> (param)
+  code = code.replace(/(\w+)\s*:\s*(?:React\.)?[A-Z]\w*(?:<[^>]+>)?(?:\[\])?(?:\s*\|\s*(?:React\.)?[A-Z]?\w*(?:<[^>]+>)?(?:\[\])?)*(?=\s*[,)=])/g, "$1");
+  
+  // Return type annotations: ): Type { -> ) {
+  code = code.replace(/\)\s*:\s*(?:React\.)?[A-Z]\w*(?:<[^>]+>)?(?:\[\])?(?:\s*\|\s*(?:React\.)?[A-Z]?\w*(?:<[^>]+>)?(?:\[\])?)*\s*(?=\{|=>)/g, ") ");
+  
+  // Remove 'as Type' assertions
+  code = code.replace(/\s+as\s+(?:React\.)?[A-Z]\w*(?:<[^>]+>)?/g, "");
+  code = code.replace(/\s+as\s+any/g, "");
+  
+  // Remove satisfies keyword
+  code = code.replace(/\s+satisfies\s+[A-Z]\w*(?:<[^>]+>)?/g, "");
+  
+  // Clean up Record<> and other utility types used inline
+  code = code.replace(/:\s*Record<[^>]+>/g, "");
+  code = code.replace(/:\s*Partial<[^>]+>/g, "");
+  code = code.replace(/:\s*Required<[^>]+>/g, "");
+  code = code.replace(/:\s*Pick<[^>]+>/g, "");
+  code = code.replace(/:\s*Omit<[^>]+>/g, "");
+  
+  // Remove const assertions
+  code = code.replace(/\s+as\s+const/g, "");
+  
+  // Clean up multiple empty lines
+  code = code.replace(/\n{3,}/g, "\n\n");
+  
+  // Clean up any leftover type artifacts
+  code = code.replace(/:\s*,/g, ",");
+  code = code.replace(/:\s*\)/g, ")");
+  code = code.replace(/:\s*}/g, "}");
+  code = code.replace(/:\s*;/g, ";");
+  code = code.replace(/\(\s*,/g, "(");
+  
+  return code.trim() + "\n";
 }
