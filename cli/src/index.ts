@@ -2,7 +2,7 @@
 
 import { Command } from "commander";
 import { init } from "./commands/init.js";
-import { add } from "./commands/add.js";
+import { add, addAll } from "./commands/add.js";
 
 const program = new Command();
 
@@ -24,5 +24,12 @@ program
   .option("-y, --yes", "Skip confirmation prompt")
   .option("-o, --overwrite", "Overwrite existing files")
   .action(add);
+
+program
+  .command("add-all")
+  .description("Add all SparkUI components to your project")
+  .option("-y, --yes", "Skip confirmation prompt")
+  .option("-o, --overwrite", "Overwrite existing files")
+  .action(addAll);
 
 program.parse();

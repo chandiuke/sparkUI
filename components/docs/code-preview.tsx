@@ -35,6 +35,7 @@ function CopyButton({ code }: { code: string }) {
       onClick={handleCopy}
       className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-gray-200 transition-all overflow-hidden"
       aria-label="Copy code"
+      suppressHydrationWarning
     >
       <div className="relative w-4 h-4">
         <AnimatePresence mode="wait">
@@ -78,6 +79,7 @@ function LanguageToggle({
     <button
       onClick={onToggle}
       className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-xs font-mono text-gray-400 hover:text-gray-200 transition-all"
+      suppressHydrationWarning
     >
       <span className={language === "tsx" ? "text-blue-400" : "text-gray-500"}>
         TS
@@ -306,6 +308,7 @@ function AnimatedTabs({
             if (el) tabRefs.current.set(tab.id, el);
           }}
           onClick={() => handleTabClick(tab.id)}
+          suppressHydrationWarning
           className={clsx(
             "relative z-10 flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors",
             activeTab === tab.id

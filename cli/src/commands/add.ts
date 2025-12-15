@@ -196,6 +196,124 @@ function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+export async function addAll(options: AddOptions) {
+  console.log("");
+  
+  const root = await getProjectRoot();
+  const pm = await detectPackageManager();
+  const isTs = await detectTypeScript();
+  const framework = await detectFramework();
+  const isNextJs = framework === "next";
+
+  // Check if SparkUI is initialized
+  const initialized = await isSparkUIInitialized(root);
+  if (!initialized) {
+    log.warn("SparkUI styles not found.");
+    
+    const response = await prompts({
+      type: "confirm",
+      name: "runInit",
+      message: "Run sparkui init first?",
+      initial: true,
+    });
+
+    if (response.runInit) {
+      await init({ yes: options.yes });
+      console.log("");
+    } else {
+      log.info("Skipping init. Components may not display correctly without SparkUI styles.");
+      console.log("");
+    }
+  }
+
+  const componentNames = Object.keys(registry);
+  console.log(chalk.bold(`✦ Adding all ${componentNames.length} components`));
+  console.log(chalk.dim(`Detected: ${framework} • ${isTs ? "TypeScript" : "JavaScript"} • ${pm}`));
+  console.log("");
+
+  // Confirm
+  if (!options.yes) {
+    const response = await prompts({
+      type: "confirm",
+      name: "proceed",
+      message: `Install all ${componentNames.length} components?`,
+      initial: true,
+    });
+
+    if (!response.proceed) {
+      log.info("Cancelled.");
+      return;
+    }
+  }
+
+  // Collect all files and dependencies
+  const allFiles: string[] = [];
+  const allDeps = new Set<string>();
+
+  for (const name of componentNames) {
+    const component = registry[name];
+    allFiles.push(...component.files);
+    component.dependencies.forEach(dep => allDeps.add(dep));
+  }
+
+  // Fetch and write all component files
+  const spinner = ora("Fetching components...").start();
+  let successCount = 0;
+
+  try {
+    for (const file of allFiles) {
+      const url = `${REGISTRY_URL}/${file}`;
+      const targetPath = path.join(root, file);
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        let content = await response.text();
+        
+        if (!isNextJs) {
+          content = removeUseClient(content);
+        }
+        
+        await fs.ensureDir(path.dirname(targetPath));
+        await fs.writeFile(targetPath, content, "utf-8");
+        successCount++;
+      } catch {
+        spinner.warn(`Failed to fetch ${file}`);
+      }
+    }
+    spinner.succeed(`Created ${successCount} component files`);
+  } catch (error) {
+    spinner.fail("Failed to add components");
+    console.error(error);
+    return;
+  }
+
+  // Install all dependencies at once
+  const depsArray = Array.from(allDeps);
+  if (depsArray.length > 0) {
+    const installSpinner = ora("Installing dependencies...").start();
+    const installCmd = getInstallCommand(pm, depsArray);
+    
+    try {
+      await execAsync(installCmd, { cwd: root });
+      installSpinner.succeed(`Installed ${depsArray.join(", ")}`);
+    } catch {
+      installSpinner.fail("Failed to install dependencies");
+      console.log(chalk.dim(`Run manually: ${installCmd}`));
+    }
+  }
+
+  // For JS projects, create tsconfig.json
+  if (!isTs) {
+    await ensureTsConfig(root, options);
+  }
+
+  // Done!
+  console.log("");
+  log.success(chalk.bold(`All ${successCount} components added!`));
+  console.log("");
+}
+
 async function ensureTsConfig(root: string, options: AddOptions): Promise<void> {
   const tsconfigPath = path.join(root, "tsconfig.json");
   const exists = await fileExists(tsconfigPath);
