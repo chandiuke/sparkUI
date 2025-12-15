@@ -11,11 +11,37 @@ interface SidebarProps {
   className?: string;
 }
 
+// Category icons
+const categoryIcons: Record<string, React.ReactNode> = {
+  "Getting Started": (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+  ),
+  "Components": (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+    </svg>
+  ),
+  "Utilities": (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+  "Animations": (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+};
+
 function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname();
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
-  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 20, opacity: 1 });
+  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 28, opacity: 1 });
   const [isAnimating, setIsAnimating] = useState(false);
   const prevPathRef = useRef(pathname);
 
@@ -30,13 +56,12 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
       const activeRect = activeEl.getBoundingClientRect();
 
       setIndicatorStyle({
-        top: activeRect.top - containerRect.top + activeRect.height / 2 - 10,
-        height: 20,
+        top: activeRect.top - containerRect.top,
+        height: activeRect.height,
         opacity: 1,
       });
     };
 
-    // Small delay to ensure DOM is ready
     requestAnimationFrame(updateIndicator);
   }, [pathname]);
 
@@ -56,33 +81,32 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     const activeRect = activeEl.getBoundingClientRect();
     const clickedRect = clickedEl.getBoundingClientRect();
 
-    const activeTop = activeRect.top - containerRect.top + activeRect.height / 2 - 10;
-    const clickedTop = clickedRect.top - containerRect.top + clickedRect.height / 2 - 10;
+    const activeTop = activeRect.top - containerRect.top;
+    const clickedTop = clickedRect.top - containerRect.top;
 
-    // Calculate expanded state
     const expandedTop = Math.min(activeTop, clickedTop);
-    const expandedHeight = Math.abs(clickedTop - activeTop) + 20;
+    const expandedHeight = Math.abs(clickedTop - activeTop) + activeRect.height;
 
     setIsAnimating(true);
 
-    // Phase 1: Expand + slight fade
+    // Phase 1: Expand
     setIndicatorStyle({
       top: expandedTop,
       height: expandedHeight,
-      opacity: 0.7,
+      opacity: 0.5,
     });
 
-    // Phase 2: Shrink to new position + fade back in
+    // Phase 2: Shrink to new position
     setTimeout(() => {
       setIndicatorStyle({
         top: clickedTop,
-        height: 20,
+        height: clickedRect.height,
         opacity: 1,
       });
       setTimeout(() => {
         setIsAnimating(false);
       }, 200);
-    }, 200);
+    }, 150);
 
     prevPathRef.current = href;
     onLinkClick?.();
@@ -90,24 +114,25 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
 
   return (
     <div ref={containerRef} className="relative">
-      {/* Animated indicator */}
+      {/* Animated indicator - pill style */}
       <motion.div
-        className="absolute left-0 w-0.5 bg-primary rounded-full"
+        className="absolute left-0 right-2 rounded-lg bg-primary/10"
         animate={{
           top: indicatorStyle.top,
           height: indicatorStyle.height,
           opacity: indicatorStyle.opacity,
         }}
-        transition={{ duration: 0.2, ease: "linear" }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
       />
 
       <nav className="space-y-6">
         {docsConfig.map((category) => (
           <div key={category.title}>
-            <h4 className="font-semibold text-sm text-foreground mb-2 px-3">
+            <h4 className="flex items-center gap-2 font-semibold text-xs uppercase tracking-wider text-muted-foreground mb-2 px-3">
+              <span className="text-primary">{categoryIcons[category.title]}</span>
               {category.title}
             </h4>
-            <ul className="space-y-1">
+            <ul className="space-y-0.5">
               {category.items.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -119,10 +144,10 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
                       href={item.href}
                       onClick={() => handleClick(item.href)}
                       className={clsx(
-                        "block px-3 py-1.5 text-sm transition-colors",
+                        "relative block px-3 py-1.5 text-sm rounded-lg transition-colors",
                         isActive
                           ? "text-primary font-medium"
-                          : "text-default-500 hover:text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
                       )}
                     >
                       {item.title}
@@ -146,14 +171,16 @@ export function Sidebar({ className }: SidebarProps) {
   );
 }
 
+
 export function MobileSidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
+      {/* Mobile FAB */}
       <button
         onClick={() => setIsOpen(true)}
-        className="lg:hidden fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center"
+        className="lg:hidden fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         aria-label="Open navigation"
       >
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -164,27 +191,33 @@ export function MobileSidebar() {
       <AnimatePresence>
         {isOpen && (
           <>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+              className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
               onClick={() => setIsOpen(false)}
             />
 
+            {/* Drawer */}
             <motion.aside
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="lg:hidden fixed left-0 top-0 bottom-0 z-50 w-72 bg-background border-r border-divider p-6 overflow-y-auto"
+              className="lg:hidden fixed left-0 top-0 bottom-0 z-50 w-80 bg-background/95 backdrop-blur-xl border-r border-border/50 flex flex-col"
             >
-              <div className="flex items-center justify-between mb-6">
-                <span className="font-bold text-lg">Navigation</span>
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-5 border-b border-border/50">
+                <div>
+                  <h2 className="font-semibold text-foreground">Documentation</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">SparkUI Components</p>
+                </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-2 rounded-lg hover:bg-default-100 transition-colors"
+                  className="p-2 rounded-lg hover:bg-muted transition-colors"
                   aria-label="Close navigation"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -192,7 +225,24 @@ export function MobileSidebar() {
                   </svg>
                 </button>
               </div>
-              <SidebarContent onLinkClick={() => setIsOpen(false)} />
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto py-4 px-4">
+                <SidebarContent onLinkClick={() => setIsOpen(false)} />
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-border/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">S</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">SparkUI</p>
+                    <p className="text-xs text-muted-foreground">v1.0.0</p>
+                  </div>
+                </div>
+              </div>
             </motion.aside>
           </>
         )}

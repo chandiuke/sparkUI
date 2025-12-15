@@ -17,12 +17,38 @@ import {
   log,
   REGISTRY_URL,
 } from "../utils.js";
+import { init } from "./init.js";
 
 const execAsync = promisify(exec);
 
 interface AddOptions {
   yes?: boolean;
   overwrite?: boolean;
+}
+
+// Check if SparkUI styles are initialized
+async function isSparkUIInitialized(root: string): Promise<boolean> {
+  const possibleCssPaths = [
+    path.join(root, "src", "index.css"),
+    path.join(root, "src", "App.css"),
+    path.join(root, "app", "globals.css"),
+    path.join(root, "styles", "globals.css"),
+  ];
+
+  for (const cssPath of possibleCssPaths) {
+    if (await fileExists(cssPath)) {
+      try {
+        const content = await fs.readFile(cssPath, "utf-8");
+        // Check for SparkUI theme variables
+        if (content.includes("--primary:") && content.includes("@theme inline")) {
+          return true;
+        }
+      } catch {
+        continue;
+      }
+    }
+  }
+  return false;
 }
 
 export async function add(componentName: string, options: AddOptions) {
@@ -33,6 +59,27 @@ export async function add(componentName: string, options: AddOptions) {
   const isTs = await detectTypeScript();
   const framework = await detectFramework();
   const isNextJs = framework === "next";
+
+  // Check if SparkUI is initialized
+  const initialized = await isSparkUIInitialized(root);
+  if (!initialized) {
+    log.warn("SparkUI styles not found.");
+    
+    const response = await prompts({
+      type: "confirm",
+      name: "runInit",
+      message: "Run sparkui init first?",
+      initial: true,
+    });
+
+    if (response.runInit) {
+      await init({ yes: options.yes });
+      console.log("");
+    } else {
+      log.info("Skipping init. Components may not display correctly without SparkUI styles.");
+      console.log("");
+    }
+  }
 
   // Check if component exists in registry
   const component = registry[componentName.toLowerCase()];

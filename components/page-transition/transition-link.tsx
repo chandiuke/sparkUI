@@ -41,13 +41,12 @@ export function TransitionLink({
       onClick={handleClick}
       className={clsx(
         className,
-        isActive &&
-          activeStyle &&
-          "bg-gradient-to-b from-primary from-60% to-secondary bg-clip-text text-transparent font-medium",
+        isActive && activeStyle && "text-primary font-medium",
       )}
       style={{
         cursor: isDisabled ? "default" : "pointer",
       }}
+      data-active={isActive || undefined}
       aria-current={isActive ? "page" : undefined}
     >
       {children}

@@ -9,6 +9,7 @@ import {
   getProjectRoot,
   detectPackageManager,
   detectTypeScript,
+  detectFramework,
   getInstallCommand,
   fileExists,
   log,
@@ -16,59 +17,93 @@ import {
 
 const execAsync = promisify(exec);
 
-const GLOBALS_CSS = `@import "tailwindcss";
+const SPARKUI_CSS = `@import "tailwindcss";
 
-/* ✦ SparkUI Light Mode */
+/* ✦ SparkUI Theme Variables */
+
+/* Light Mode */
 :root {
-  --background: 250 25% 98%;
-  --foreground: 250 15% 12%;
-  --primary: 265 90% 52%;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --primary: 270 100% 57%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 215 95% 55%;
+  --secondary: 220 100% 50%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 250 20% 92%;
-  --muted-foreground: 250 10% 42%;
-  --accent: 265 40% 94%;
-  --accent-foreground: 265 60% 35%;
-  --success: 152 70% 38%;
-  --success-foreground: 0 0% 100%;
-  --warning: 42 95% 50%;
-  --warning-foreground: 42 95% 15%;
-  --danger: 350 85% 55%;
-  --danger-foreground: 0 0% 100%;
+  --muted: 240 5% 96%;
+  --muted-foreground: 240 4% 46%;
+  --accent: 240 5% 96%;
+  --accent-foreground: 240 6% 10%;
   --card: 0 0% 100%;
-  --card-foreground: 250 15% 12%;
-  --border: 250 15% 85%;
-  --input: 250 15% 85%;
-  --ring: 265 90% 52%;
-  --radius: 0.5rem;
-}
-
-/* ✦ SparkUI Dark Mode */
-.dark {
-  --background: 240 15% 4%;
-  --foreground: 0 0% 95%;
-  --primary: 265 95% 62%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 215 100% 60%;
-  --secondary-foreground: 0 0% 100%;
-  --muted: 240 10% 14%;
-  --muted-foreground: 240 5% 60%;
-  --accent: 265 30% 18%;
-  --accent-foreground: 265 80% 80%;
-  --success: 152 75% 45%;
-  --success-foreground: 152 75% 10%;
-  --warning: 42 95% 55%;
-  --warning-foreground: 42 95% 10%;
-  --danger: 350 90% 60%;
+  --card-foreground: 0 0% 0%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 270 100% 57%;
+  --success: 142 71% 45%;
+  --success-foreground: 0 0% 0%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 0%;
+  --danger: 339 90% 51%;
   --danger-foreground: 0 0% 100%;
-  --card: 240 12% 8%;
-  --card-foreground: 0 0% 95%;
-  --border: 240 8% 18%;
-  --input: 240 8% 18%;
-  --ring: 265 95% 62%;
+  --divider: 240 6% 90%;
+  --radius: 1rem;
 }
 
+/* Dark Mode */
+.dark {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --primary: 270 100% 57%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 100% 50%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 240 4% 16%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 240 4% 16%;
+  --accent-foreground: 0 0% 100%;
+  --card: 240 6% 10%;
+  --card-foreground: 0 0% 100%;
+  --border: 240 4% 16%;
+  --input: 240 4% 16%;
+  --ring: 270 100% 57%;
+  --success: 142 71% 45%;
+  --success-foreground: 0 0% 0%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 0%;
+  --danger: 339 90% 51%;
+  --danger-foreground: 0 0% 100%;
+  --divider: 240 4% 16%;
+}
+
+/* Tailwind 4 Theme Mapping */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-danger: hsl(var(--danger));
+  --color-danger-foreground: hsl(var(--danger-foreground));
+  --color-divider: hsl(var(--divider));
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* Base Styles */
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
@@ -86,14 +121,17 @@ export async function init(options: InitOptions) {
 
   const root = await getProjectRoot();
   const pm = await detectPackageManager();
-  const isTs = await detectTypeScript();
+  const framework = await detectFramework();
 
   // Check if package.json exists
   const packageJsonPath = path.join(root, "package.json");
   if (!(await fileExists(packageJsonPath))) {
-    log.error("No package.json found. Please run this in a React/Next.js project.");
+    log.error("No package.json found. Please run this in a React/Next.js/Vite project.");
     process.exit(1);
   }
+
+  console.log(chalk.dim(`Detected: ${framework} • ${pm}`));
+  console.log("");
 
   if (!options.yes) {
     const response = await prompts({
@@ -109,21 +147,35 @@ export async function init(options: InitOptions) {
     }
   }
 
-  // 1. Create globals.css
-  const spinner = ora("Creating CSS variables...").start();
+  // 1. Find and update CSS file
+  const spinner = ora("Setting up SparkUI styles...").start();
   
-  const cssPath = path.join(root, "styles", "globals.css");
-  const appCssPath = path.join(root, "app", "globals.css");
-  
-  // Check which path exists or use styles/globals.css
-  let targetCssPath = cssPath;
-  if (await fileExists(appCssPath)) {
-    targetCssPath = appCssPath;
+  // Check common CSS file locations
+  const possibleCssPaths = [
+    path.join(root, "src", "index.css"),      // Vite default
+    path.join(root, "src", "App.css"),        // CRA
+    path.join(root, "app", "globals.css"),    // Next.js app router
+    path.join(root, "styles", "globals.css"), // Next.js pages router
+  ];
+
+  let targetCssPath: string | null = null;
+  for (const cssPath of possibleCssPaths) {
+    if (await fileExists(cssPath)) {
+      targetCssPath = cssPath;
+      break;
+    }
+  }
+
+  // Default to src/index.css for Vite or styles/globals.css for Next
+  if (!targetCssPath) {
+    targetCssPath = framework === "vite" 
+      ? path.join(root, "src", "index.css")
+      : path.join(root, "styles", "globals.css");
   }
 
   try {
     await fs.ensureDir(path.dirname(targetCssPath));
-    await fs.writeFile(targetCssPath, GLOBALS_CSS, "utf-8");
+    await fs.writeFile(targetCssPath, SPARKUI_CSS, "utf-8");
     spinner.succeed(`Created ${path.relative(root, targetCssPath)}`);
   } catch (error) {
     spinner.fail("Failed to create CSS file");
@@ -136,7 +188,7 @@ export async function init(options: InitOptions) {
   log.success("Created components/ui directory");
 
   // 3. Install dependencies
-  const deps = ["clsx", "framer-motion"];
+  const deps = ["clsx"];
   const installCmd = getInstallCommand(pm, deps);
   
   const installSpinner = ora(`Installing dependencies...`).start();

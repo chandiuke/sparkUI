@@ -69,7 +69,7 @@ export default function Home() {
                 { text: "Premium UI Components" },
                 {
                   text: "Ready to Copy & Paste",
-                  className: "bg-gradient-to-b from-primary from-60% to-secondary bg-clip-text text-transparent",
+                  className: "text-gradient",
                 },
               ]}
               lineDuration={1.2}
@@ -116,7 +116,15 @@ export default function Home() {
             { value: "100%", label: "Free" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-to-b from-foreground to-foreground/50 bg-clip-text text-transparent">
+              <div 
+                className="text-4xl md:text-5xl font-bold"
+                style={{
+                  background: "linear-gradient(to bottom, hsl(var(--foreground)), hsl(var(--foreground) / 0.5))",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
                 {stat.value}
               </div>
               <div className="text-default-500 text-base mt-2">

@@ -10,14 +10,6 @@ export interface ComponentDefinition {
 }
 
 export const registry: Record<string, ComponentDefinition> = {
-  button: {
-    name: "button",
-    description: "A versatile button component with multiple variants, colors, and sizes",
-    files: ["components/ui/button.tsx"],
-    dependencies: ["clsx"],
-    devDependencies: [],
-    registryDependencies: [],
-  },
   accordion: {
     name: "accordion",
     description: "A vertically stacked set of interactive headings that reveal content",
@@ -26,11 +18,51 @@ export const registry: Record<string, ComponentDefinition> = {
     devDependencies: [],
     registryDependencies: [],
   },
+  avatar: {
+    name: "avatar",
+    description: "An image element with fallback for representing users",
+    files: ["components/ui/avatar.tsx"],
+    dependencies: ["clsx"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
+  badge: {
+    name: "badge",
+    description: "A small status indicator component with multiple variants",
+    files: ["components/ui/badge.tsx"],
+    dependencies: ["clsx"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
+  button: {
+    name: "button",
+    description: "A versatile button component with multiple variants, colors, and sizes",
+    files: ["components/ui/button.tsx"],
+    dependencies: ["clsx"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
   chip: {
     name: "chip",
     description: "A compact element for displaying tags, labels, or status indicators",
     files: ["components/ui/chip.tsx"],
     dependencies: ["clsx", "framer-motion"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
+  "date-picker": {
+    name: "date-picker",
+    description: "A date selection component with calendar popup",
+    files: ["components/ui/date-picker.tsx"],
+    dependencies: ["clsx"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
+  "file-upload": {
+    name: "file-upload",
+    description: "A drag and drop file upload component",
+    files: ["components/ui/file-upload.tsx"],
+    dependencies: ["clsx"],
     devDependencies: [],
     registryDependencies: [],
   },
@@ -50,10 +82,35 @@ export const registry: Record<string, ComponentDefinition> = {
     devDependencies: [],
     registryDependencies: [],
   },
+  textarea: {
+    name: "textarea",
+    description: "A multi-line text input with auto-resize, validation, and character count",
+    files: ["components/ui/textarea.tsx"],
+    dependencies: ["clsx"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
+  select: {
+    name: "select",
+    description: "A customizable dropdown select with search, groups, icons, and multi-select",
+    files: ["components/ui/select.tsx"],
+    dependencies: ["clsx"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
+  dropdown: {
+    name: "dropdown",
+    description: "A versatile dropdown menu for navbars, context menus, and actions",
+    files: ["components/ui/dropdown.tsx"],
+    dependencies: ["clsx"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
 };
 
 export const baseFiles = {
   globals: "styles/globals.css",
+  sparkui: "styles/sparkui.css",
 };
 
 export const baseDependencies = ["clsx", "tailwind-merge"];

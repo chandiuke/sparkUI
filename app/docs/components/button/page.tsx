@@ -82,6 +82,9 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* Variants */}
             <section id="variants">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Variants</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Seven visual styles to match your design: solid (filled), bordered (thick border), outline (thin border), faded (border that fills on hover), flat (subtle background), ghost (transparent), and shadow (elevated with shadow).
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
@@ -107,6 +110,9 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* Colors */}
             <section id="colors">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Colors</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Six semantic color options: default (neutral), primary (main action), secondary (alternative), success (positive), warning (caution), and danger (destructive).
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
@@ -130,6 +136,9 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* Sizes */}
             <section id="sizes">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Sizes</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Three text button sizes: sm (32px), md (40px default), and lg (48px). For icon-only buttons, use the dedicated icon sizes.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap items-center gap-3">
@@ -179,6 +188,9 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* Radius */}
             <section id="radius">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Radius</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Control border radius: none (sharp corners), sm, md (default), lg, or full (pill shape).
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
@@ -200,6 +212,9 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* With Icons */}
             <section id="with-icons">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">With Icons</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Add icons before or after the button text using startContent and endContent props. For icon-only buttons, use the icon size variants.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
@@ -239,17 +254,20 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* Loading */}
             <section id="loading">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Loading State</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Add a loading spinner and disable interactions while an async operation is in progress. The button automatically shows a spinner and prevents clicks.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
-                    <Button color="primary" isLoading>Loading</Button>
-                    <Button color="primary" isLoading={isLoading} onClick={handleLoadingClick}>
+                    <Button color="primary" loading>Loading</Button>
+                    <Button color="primary" loading={isLoading} onClick={handleLoadingClick}>
                       {isLoading ? "Saving..." : "Save Changes"}
                     </Button>
                   </div>
                 }
-                code={`<Button isLoading>Loading</Button>
-<Button isLoading={isLoading} onClick={handleClick}>
+                code={`<Button loading>Loading</Button>
+<Button loading={isLoading} onClick={handleClick}>
   {isLoading ? "Saving..." : "Save Changes"}
 </Button>`}
               />
@@ -258,23 +276,29 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* Disabled */}
             <section id="disabled">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Disabled</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Disable the button to prevent user interaction. Disabled buttons have reduced opacity and no hover effects.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
-                    <Button isDisabled>Disabled</Button>
-                    <Button color="primary" isDisabled>Primary Disabled</Button>
-                    <Button variant="bordered" isDisabled>Bordered Disabled</Button>
+                    <Button disabled>Disabled</Button>
+                    <Button color="primary" disabled>Primary Disabled</Button>
+                    <Button variant="bordered" disabled>Bordered Disabled</Button>
                   </div>
                 }
-                code={`<Button isDisabled>Disabled</Button>
-<Button color="primary" isDisabled>Primary Disabled</Button>
-<Button variant="bordered" isDisabled>Bordered Disabled</Button>`}
+                code={`<Button disabled>Disabled</Button>
+<Button color="primary" disabled>Primary Disabled</Button>
+<Button variant="bordered" disabled>Bordered Disabled</Button>`}
               />
             </section>
 
             {/* Full Width */}
             <section id="full-width">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Full Width</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Make the button span the full width of its container. Great for mobile layouts and form submit buttons.
+              </p>
               <CodePreview
                 preview={<Button color="primary" fullWidth>Full Width Button</Button>}
                 code={`<Button fullWidth>Full Width Button</Button>`}
@@ -284,6 +308,9 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* As Link */}
             <section id="as-link">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">As Link</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Render the button as an anchor tag for navigation. Maintains button styling while being semantically correct for links.
+              </p>
               <CodePreview
                 preview={
                   <Button as="a" href="https://github.com" color="primary">
@@ -297,6 +324,9 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* Button Group */}
             <section id="button-group">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Button Group</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Create connected button groups by removing radius and adding custom border classes. Perfect for segmented controls and toolbars.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex">
@@ -316,6 +346,9 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* Icon Only */}
             <section id="icon-only">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Icon Only</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Square buttons for icons. Use aria-label for accessibility since there&apos;s no visible text.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap items-center gap-3">
@@ -351,6 +384,9 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
             {/* Custom Styles */}
             <section id="custom-styles">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Custom Styles</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Override default styles with custom Tailwind classes. Add gradients, custom borders, or any other styling.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
@@ -380,14 +416,14 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </Button>
-                    <Button color="primary" isLoading>Loading...</Button>
+                    <Button color="primary" loading>Loading...</Button>
                   </div>
                 }
                 code={`// Icon buttons need aria-label
 <Button size="icon" aria-label="Delete item"><TrashIcon /></Button>
 
 // Loading adds aria-busy automatically
-<Button isLoading>Loading...</Button>`}
+<Button loading>Loading...</Button>`}
               />
             </section>
 
@@ -430,13 +466,13 @@ export default function Example({ label }: MyButtonProps): JSX.Element {
                       <td className="py-4 px-5">Border radius</td>
                     </tr>
                     <tr className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="py-4 px-5 font-mono text-foreground text-sm">isDisabled</td>
+                      <td className="py-4 px-5 font-mono text-foreground text-sm">disabled</td>
                       <td className="py-4 px-5 font-mono text-xs text-primary/80">boolean</td>
                       <td className="py-4 px-5 font-mono text-xs">false</td>
                       <td className="py-4 px-5">Disable the button</td>
                     </tr>
                     <tr className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="py-4 px-5 font-mono text-foreground text-sm">isLoading</td>
+                      <td className="py-4 px-5 font-mono text-foreground text-sm">loading</td>
                       <td className="py-4 px-5 font-mono text-xs text-primary/80">boolean</td>
                       <td className="py-4 px-5 font-mono text-xs">false</td>
                       <td className="py-4 px-5">Show loading spinner</td>

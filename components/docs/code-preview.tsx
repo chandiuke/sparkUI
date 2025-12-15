@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, ReactNode } from "react";
+import React, { useState, ReactNode } from "react";
 import { Highlight, themes } from "prism-react-renderer";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion"; // Keep for CopyButton animation
 import { Copy, Check, Eye, Code2 } from "lucide-react";
 import { clsx } from "clsx";
 
@@ -191,6 +191,136 @@ export function CodeBlock({
   );
 }
 
+// Animated tabs with horizontal shrinking indicator
+function AnimatedTabs({
+  activeTab,
+  onTabChange,
+}: {
+  activeTab: "preview" | "code";
+  onTabChange: (tab: "preview" | "code") => void;
+}) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const tabRefs = React.useRef<Map<string, HTMLButtonElement>>(new Map());
+  const [indicatorStyle, setIndicatorStyle] = React.useState({ left: 4, width: 82 });
+  const [isAnimating, setIsAnimating] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  const tabs = [
+    { id: "preview" as const, label: "Preview", icon: Eye },
+    { id: "code" as const, label: "Code", icon: Code2 },
+  ];
+
+  // Initialize indicator position after mount
+  React.useEffect(() => {
+    setMounted(true);
+    const updateIndicator = () => {
+      const container = containerRef.current;
+      const activeButton = tabRefs.current.get(activeTab);
+      if (!container || !activeButton) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const buttonRect = activeButton.getBoundingClientRect();
+
+      setIndicatorStyle({
+        left: buttonRect.left - containerRect.left,
+        width: buttonRect.width,
+      });
+    };
+
+    requestAnimationFrame(updateIndicator);
+  }, [activeTab]);
+
+  const handleTabClick = (tabId: "preview" | "code") => {
+    if (tabId === activeTab || isAnimating) return;
+
+    const container = containerRef.current;
+    const currentButton = tabRefs.current.get(activeTab);
+    const targetButton = tabRefs.current.get(tabId);
+
+    if (!container || !currentButton || !targetButton) {
+      onTabChange(tabId);
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const currentRect = currentButton.getBoundingClientRect();
+    const targetRect = targetButton.getBoundingClientRect();
+
+    const currentLeft = currentRect.left - containerRect.left;
+    const targetLeft = targetRect.left - containerRect.left;
+    const currentRight = currentLeft + currentRect.width;
+    const targetRight = targetLeft + targetRect.width;
+
+    // Determine direction: moving right (preview → code) or left (code → preview)
+    const movingRight = targetLeft > currentLeft;
+
+    setIsAnimating(true);
+
+    // Phase 1: Expand - leading edge moves first, trailing edge stays
+    if (movingRight) {
+      // Moving right: right edge expands to target, left edge stays
+      setIndicatorStyle({
+        left: currentLeft,
+        width: targetRight - currentLeft,
+      });
+    } else {
+      // Moving left: left edge expands to target, right edge stays
+      setIndicatorStyle({
+        left: targetLeft,
+        width: currentRight - targetLeft,
+      });
+    }
+
+    // Phase 2: Shrink - trailing edge catches up
+    setTimeout(() => {
+      setIndicatorStyle({
+        left: targetLeft,
+        width: targetRect.width,
+      });
+      onTabChange(tabId);
+      setTimeout(() => setIsAnimating(false), 150);
+    }, 150);
+  };
+
+  return (
+    <div 
+      ref={containerRef}
+      className="relative flex items-center gap-0.5 p-1 bg-muted/50 rounded-t-xl border border-b-0 border-border w-fit"
+    >
+      {/* Animated indicator */}
+      <motion.div
+        className="absolute top-1 bottom-1 bg-background rounded-lg shadow-sm"
+        initial={false}
+        animate={{
+          left: indicatorStyle.left,
+          width: indicatorStyle.width,
+          opacity: mounted ? 1 : 0,
+        }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
+      />
+
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          ref={(el) => {
+            if (el) tabRefs.current.set(tab.id, el);
+          }}
+          onClick={() => handleTabClick(tab.id)}
+          className={clsx(
+            "relative z-10 flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors",
+            activeTab === tab.id
+              ? "text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <tab.icon className="w-3.5 h-3.5" />
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function CodePreview({
   preview,
   code,
@@ -203,70 +333,31 @@ export function CodePreview({
   const displayCode = currentLang === "jsx" ? (jsxCode || convertToJsx(code)) : code;
 
   return (
-    <div className={clsx("space-y-3", className)}>
-      {/* Tabs */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => setActiveTab("preview")}
-          className={clsx(
-            "flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all",
-            activeTab === "preview"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          )}
-        >
-          <Eye className="w-4 h-4" />
-          Preview
-        </button>
-        <button
-          onClick={() => setActiveTab("code")}
-          className={clsx(
-            "flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all",
-            activeTab === "code"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          )}
-        >
-          <Code2 className="w-4 h-4" />
-          Code
-        </button>
-      </div>
+    <div className={clsx("space-y-0", className)}>
+      {/* Animated Tabs */}
+      <AnimatedTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Content */}
-      <div className="rounded-xl border border-border overflow-hidden">
-        <AnimatePresence mode="wait">
-          {activeTab === "preview" ? (
-            <motion.div
-              key="preview"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="p-6 bg-card"
-            >
-              {preview}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="code"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              <div className="relative">
-                <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
-                  <LanguageToggle
-                    language={currentLang}
-                    onToggle={() => setCurrentLang(currentLang === "tsx" ? "jsx" : "tsx")}
-                  />
-                  <CopyButton code={displayCode} />
-                </div>
-                <CodeRenderer code={displayCode} language={currentLang} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className={clsx(
+        "rounded-xl rounded-tl-none border border-border",
+        activeTab === "code" && "overflow-hidden"
+      )}>
+        {activeTab === "preview" ? (
+          <div className="p-6 bg-card/50 min-h-[120px]">
+            {preview}
+          </div>
+        ) : (
+          <div className="relative">
+            <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+              <LanguageToggle
+                language={currentLang}
+                onToggle={() => setCurrentLang(currentLang === "tsx" ? "jsx" : "tsx")}
+              />
+              <CopyButton code={displayCode} />
+            </div>
+            <CodeRenderer code={displayCode} language={currentLang} />
+          </div>
+        )}
       </div>
     </div>
   );

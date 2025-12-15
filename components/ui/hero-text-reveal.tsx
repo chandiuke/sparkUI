@@ -263,6 +263,9 @@ export function HeroTextReveal({
         const isLTR = line.direction === "ltr";
         const maskDelay = getMaskDelay(i);
 
+        // Check if this line has gradient text class
+        const hasGradient = line.className?.includes("text-gradient");
+        
         return (
           <span key={i}>
             {i > 0 && <br />}
@@ -277,6 +280,12 @@ export function HeroTextReveal({
               </span>
               <motion.span
                 className={`absolute top-0 left-0 whitespace-nowrap ${line.className || ""}`}
+                style={hasGradient ? {
+                  background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                } : undefined}
                 initial={{
                   clipPath: isLTR
                     ? "inset(-10% 100% -10% 0)"

@@ -419,7 +419,7 @@ export default function ControlledAccordion(): JSX.Element {
             <section id="with-subtitle">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">With Subtitle</h2>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Add secondary text to triggers using the subtitle prop.
+                Add secondary descriptive text below the trigger title using the subtitle prop. Great for providing context.
               </p>
               <CodePreview
                 preview={
@@ -454,7 +454,7 @@ export default function ControlledAccordion(): JSX.Element {
             <section id="custom-indicator">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Custom Indicator</h2>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Use the indicator prop to customize the expand/collapse icon. Built-in AccordionPlusIcon available.
+                Replace the default chevron with a custom indicator using the indicator prop. The built-in AccordionPlusIcon provides a plus/minus style.
               </p>
               <CodePreview
                 preview={
@@ -485,7 +485,7 @@ export default function ControlledAccordion(): JSX.Element {
             <section id="hide-indicator">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Hide Indicator</h2>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Use hideIndicator to remove the chevron entirely for a cleaner look.
+                Remove the expand/collapse indicator entirely with hideIndicator. The entire trigger row remains clickable.
               </p>
               <CodePreview
                 preview={
@@ -512,6 +512,9 @@ export default function ControlledAccordion(): JSX.Element {
             {/* Disabled */}
             <section id="disabled">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Disabled Items</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Disable individual accordion items to prevent interaction. Disabled items have reduced opacity.
+              </p>
               <CodePreview
                 preview={
                   <Accordion variant="bordered">
@@ -519,7 +522,7 @@ export default function ControlledAccordion(): JSX.Element {
                       <AccordionTrigger>Enabled item</AccordionTrigger>
                       <AccordionContent>This item can be expanded.</AccordionContent>
                     </AccordionItem>
-                    <AccordionItem value="disabled" isDisabled>
+                    <AccordionItem value="disabled" disabled>
                       <AccordionTrigger>Disabled item</AccordionTrigger>
                       <AccordionContent>This content is hidden.</AccordionContent>
                     </AccordionItem>
@@ -529,7 +532,7 @@ export default function ControlledAccordion(): JSX.Element {
                     </AccordionItem>
                   </Accordion>
                 }
-                code={`<AccordionItem value="disabled" isDisabled>
+                code={`<AccordionItem value="disabled" disabled>
   <AccordionTrigger>Disabled item</AccordionTrigger>
   <AccordionContent>Hidden content</AccordionContent>
 </AccordionItem>`}
@@ -762,7 +765,7 @@ export default function ControlledAccordion(): JSX.Element {
                       <td className="py-4 px-5">Unique identifier for the item</td>
                     </tr>
                     <tr className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="py-4 px-5 font-mono text-foreground text-sm">isDisabled</td>
+                      <td className="py-4 px-5 font-mono text-foreground text-sm">disabled</td>
                       <td className="py-4 px-5 font-mono text-xs text-primary/80">boolean</td>
                       <td className="py-4 px-5 font-mono text-xs">false</td>
                       <td className="py-4 px-5">Disable the item</td>

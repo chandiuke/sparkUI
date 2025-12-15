@@ -114,6 +114,9 @@ export default function TagList(): JSX.Element {
             {/* Variants */}
             <section id="variants">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Variants</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Five visual styles: solid (filled), bordered (thick border), flat (subtle background), faded (border with light fill), and dot (status indicator).
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
@@ -135,6 +138,9 @@ export default function TagList(): JSX.Element {
             {/* Colors */}
             <section id="colors">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Colors</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Six semantic colors: default (neutral), primary, secondary, success, warning, and danger.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
@@ -158,6 +164,9 @@ export default function TagList(): JSX.Element {
             {/* Sizes */}
             <section id="sizes">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Sizes</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Three sizes: sm (24px), md (28px default), and lg (32px).
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap items-center gap-3">
@@ -175,6 +184,9 @@ export default function TagList(): JSX.Element {
             {/* Radius */}
             <section id="radius">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Radius</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Control border radius: none (sharp), sm, md, lg, or full (pill shape, default).
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
@@ -196,6 +208,9 @@ export default function TagList(): JSX.Element {
             {/* With Avatar */}
             <section id="with-avatar">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">With Avatar</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Add user avatars or initials at the start of the chip using the avatar prop.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
@@ -314,7 +329,7 @@ export default function CloseableChips(): JSX.Element {
             <section id="selectable">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Selectable</h2>
               <p className="text-muted-foreground mb-6 leading-relaxed">
-                Use isSelected with onClick to create filter chips. Selected chips show a checkmark and ring indicator.
+                Use selected with onClick to create filter chips. Selected chips show a checkmark and ring indicator.
               </p>
               <CodePreview
                 preview={
@@ -324,7 +339,7 @@ export default function CloseableChips(): JSX.Element {
                         key={filter}
                         color="primary"
                         variant="flat"
-                        isSelected={selectedFilters.includes(filter)}
+                        selected={selectedFilters.includes(filter)}
                         onClick={() => toggleFilter(filter)}
                       >
                         {filter}
@@ -361,7 +376,7 @@ export default function FilterChips(): JSX.Element {
         <Chip
           key={filter}
           variant="flat"
-          isSelected={selected.includes(filter)}
+          selected={selected.includes(filter)}
           onClick={() => toggleFilter(filter)}
         >
           {filter}
@@ -428,6 +443,9 @@ export default function FilterChips(): JSX.Element {
             {/* With Icons */}
             <section id="with-icons">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">With Icons</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Add icons before the text using startContent for status indicators or categories.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
@@ -478,17 +496,20 @@ export default function FilterChips(): JSX.Element {
             {/* Disabled */}
             <section id="disabled">
               <h2 className="text-xl font-semibold mb-4 scroll-mt-6">Disabled</h2>
+              <p className="text-muted-foreground mb-6 leading-relaxed">
+                Disable chips to prevent interaction. Disabled chips have reduced opacity and no hover effects.
+              </p>
               <CodePreview
                 preview={
                   <div className="flex flex-wrap gap-3">
-                    <Chip isDisabled>Disabled</Chip>
-                    <Chip color="primary" isDisabled>Primary Disabled</Chip>
-                    <Chip color="success" isDisabled onClose={() => {}}>With Close</Chip>
+                    <Chip disabled>Disabled</Chip>
+                    <Chip color="primary" disabled>Primary Disabled</Chip>
+                    <Chip color="success" disabled onClose={() => {}}>With Close</Chip>
                   </div>
                 }
-                code={`<Chip isDisabled>Disabled</Chip>
-<Chip color="primary" isDisabled>Primary Disabled</Chip>
-<Chip isDisabled onClose={() => {}}>With Close</Chip>`}
+                code={`<Chip disabled>Disabled</Chip>
+<Chip color="primary" disabled>Primary Disabled</Chip>
+<Chip disabled onClose={() => {}}>With Close</Chip>`}
               />
             </section>
 
@@ -561,13 +582,13 @@ export default function FilterChips(): JSX.Element {
                       <td className="py-4 px-5">Click handler (makes chip interactive)</td>
                     </tr>
                     <tr className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="py-4 px-5 font-mono text-foreground text-sm">isSelected</td>
+                      <td className="py-4 px-5 font-mono text-foreground text-sm">selected</td>
                       <td className="py-4 px-5 font-mono text-xs text-primary/80">boolean</td>
                       <td className="py-4 px-5 font-mono text-xs">false</td>
                       <td className="py-4 px-5">Selected state with ring indicator</td>
                     </tr>
                     <tr className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                      <td className="py-4 px-5 font-mono text-foreground text-sm">isDisabled</td>
+                      <td className="py-4 px-5 font-mono text-foreground text-sm">disabled</td>
                       <td className="py-4 px-5 font-mono text-xs text-primary/80">boolean</td>
                       <td className="py-4 px-5 font-mono text-xs">false</td>
                       <td className="py-4 px-5">Disable the chip</td>
