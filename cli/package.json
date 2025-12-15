@@ -1,6 +1,6 @@
 {
   "name": "sparkui-cli",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "CLI for adding SparkUI components to your project",
   "type": "module",
   "bin": {

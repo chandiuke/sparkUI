@@ -178,18 +178,15 @@ export async function add(componentName: string, options: AddOptions) {
     }
   }
 
+  // For JS projects, create tsconfig.json to enable TSX support
+  if (!isTs) {
+    await ensureTsConfig(root, options);
+  }
+
   // Done!
   console.log("");
   log.success(chalk.bold(`${component.name} added!`));
   console.log("");
-  
-  // Show tsconfig tip for JS projects
-  if (!isTs) {
-    log.info("Components use TypeScript. Add a tsconfig.json to enable TSX support:");
-    console.log(chalk.dim(`  npx tsc --init`));
-    console.log("");
-  }
-  
   console.log("Import it:");
   console.log(chalk.cyan(`  import { ${capitalize(component.name)} } from "@/components/ui/${component.name}"`));
   console.log("");
@@ -197,6 +194,51 @@ export async function add(componentName: string, options: AddOptions) {
 
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+async function ensureTsConfig(root: string, options: AddOptions): Promise<void> {
+  const tsconfigPath = path.join(root, "tsconfig.json");
+  const exists = await fileExists(tsconfigPath);
+
+  if (exists && !options.overwrite) {
+    if (!options.yes) {
+      const response = await prompts({
+        type: "confirm",
+        name: "overwrite",
+        message: "tsconfig.json already exists. Overwrite to enable TSX support?",
+        initial: false,
+      });
+
+      if (!response.overwrite) {
+        log.info("Keeping existing tsconfig.json");
+        return;
+      }
+    } else {
+      log.info("Keeping existing tsconfig.json");
+      return;
+    }
+  }
+
+  const tsconfig = {
+    compilerOptions: {
+      target: "ES2020",
+      jsx: "react-jsx",
+      module: "ESNext",
+      moduleResolution: "bundler",
+      allowJs: true,
+      skipLibCheck: true,
+      esModuleInterop: true,
+      strict: false,
+      noEmit: true,
+      paths: {
+        "@/*": ["./*"]
+      }
+    },
+    include: ["src", "components"]
+  };
+
+  await fs.writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2), "utf-8");
+  log.success("Created tsconfig.json for TSX support");
 }
 
 
