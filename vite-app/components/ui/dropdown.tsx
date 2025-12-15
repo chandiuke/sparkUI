@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef, useEffect, useId, useCallback, createContext, useContext } from "react";
 import { clsx } from "clsx";
 
@@ -131,7 +133,7 @@ export function Dropdown({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, setIsOpen]);
 
-  const hoverTimeoutRef = useRef<NodeJS.Timeout>();
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const handleMouseEnter = () => {
     if (trigger === "hover") {
