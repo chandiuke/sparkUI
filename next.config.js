@@ -2,6 +2,14 @@
 const nextConfig = {
   devIndicators: false,
   
+  // Skip ESLint and TypeScript during build (run separately)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion', 'prism-react-renderer'],
