@@ -13,6 +13,7 @@ import {
   getInstallCommand,
   fileExists,
   log,
+  REGISTRY_URL,
 } from "../utils.js";
 
 const execAsync = promisify(exec);
@@ -182,12 +183,40 @@ export async function init(options: InitOptions) {
     console.error(error);
   }
 
-  // 2. Create components/ui directory
+  // 2. Fetch and install sparkui.css utility classes
+  const sparkuiSpinner = ora("Fetching SparkUI utilities...").start();
+  try {
+    const sparkuiUrl = `${REGISTRY_URL}/styles/sparkui.css`;
+    const response = await fetch(sparkuiUrl);
+    if (response.ok) {
+      const sparkuiContent = await response.text();
+      const sparkuiPath = framework === "vite" 
+        ? path.join(root, "src", "sparkui.css")
+        : path.join(root, "styles", "sparkui.css");
+      await fs.ensureDir(path.dirname(sparkuiPath));
+      await fs.writeFile(sparkuiPath, sparkuiContent, "utf-8");
+      sparkuiSpinner.succeed(`Created ${path.relative(root, sparkuiPath)}`);
+      
+      // Add import to main CSS file
+      const currentCss = await fs.readFile(targetCssPath, "utf-8");
+      if (!currentCss.includes("sparkui.css")) {
+        const importStatement = '@import "./sparkui.css";\n';
+        await fs.writeFile(targetCssPath, importStatement + currentCss, "utf-8");
+        log.success("Added sparkui.css import to main CSS");
+      }
+    } else {
+      sparkuiSpinner.warn("Could not fetch sparkui.css utilities (optional)");
+    }
+  } catch {
+    sparkuiSpinner.warn("Could not fetch sparkui.css utilities (optional)");
+  }
+
+  // 3. Create components/ui directory
   const uiDir = path.join(root, "components", "ui");
   await fs.ensureDir(uiDir);
   log.success("Created components/ui directory");
 
-  // 3. Install dependencies
+  // 4. Install dependencies
   const deps = ["clsx"];
   const installCmd = getInstallCommand(pm, deps);
   

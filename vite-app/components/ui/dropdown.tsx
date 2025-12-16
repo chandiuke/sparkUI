@@ -528,13 +528,13 @@ export function DropdownMenu({ children, variant = "default", className }: Dropd
       >
         {/* Items container */}
         <div ref={listRef} className="relative">
-          {/* Floating highlight - stays in place, only opacity changes */}
+          {/* Floating highlight */}
           {highlightPosition && (
             <div
               className={clsx(
                 "absolute left-1.5 right-1.5 rounded-lg pointer-events-none",
-                highlightPosition.highlightClass,
                 "transition-[top,height,opacity] duration-150 ease-out",
+                highlightPosition.highlightClass,
                 showHighlight ? "opacity-100" : "opacity-0"
               )}
               style={{
