@@ -155,58 +155,30 @@ export function CodeBlock({
   );
 }
 
-// Animated tabs - simplified
-function AnimatedTabs({
+// Simple tabs - no animation to prevent scroll jank
+function SimpleTabs({
   activeTab,
   onTabChange,
 }: {
   activeTab: "preview" | "code";
   onTabChange: (tab: "preview" | "code") => void;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 4, width: 82 });
-  const [mounted, setMounted] = useState(false);
-
   const tabs = [
     { id: "preview" as const, label: "Preview", Icon: EyeIcon },
     { id: "code" as const, label: "Code", Icon: CodeIcon },
   ];
 
-  useEffect(() => {
-    setMounted(true);
-    const updateIndicator = () => {
-      const container = containerRef.current;
-      const activeButton = tabRefs.current.get(activeTab);
-      if (!container || !activeButton) return;
-      const containerRect = container.getBoundingClientRect();
-      const buttonRect = activeButton.getBoundingClientRect();
-      setIndicatorStyle({
-        left: buttonRect.left - containerRect.left,
-        width: buttonRect.width,
-      });
-    };
-    requestAnimationFrame(updateIndicator);
-  }, [activeTab]);
-
   return (
-    <div 
-      ref={containerRef}
-      className="relative flex items-center gap-0.5 p-1 bg-muted/50 rounded-t-xl border border-b-0 border-border w-fit"
-    >
-      <div
-        className="absolute top-1 bottom-1 bg-background rounded-lg shadow-sm transition-all duration-150 ease-out"
-        style={{ left: indicatorStyle.left, width: indicatorStyle.width, opacity: mounted ? 1 : 0 }}
-      />
+    <div className="flex items-center gap-0.5 p-1 bg-muted/50 rounded-t-xl border border-b-0 border-border w-fit">
       {tabs.map((tab) => (
         <button
           key={tab.id}
-          ref={(el) => { if (el) tabRefs.current.set(tab.id, el); }}
           onClick={() => onTabChange(tab.id)}
-          suppressHydrationWarning
           className={clsx(
-            "relative z-10 flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors",
-            activeTab === tab.id ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg",
+            activeTab === tab.id 
+              ? "bg-background text-foreground shadow-sm" 
+              : "text-muted-foreground hover:text-foreground"
           )}
         >
           <tab.Icon />
@@ -237,31 +209,28 @@ export function CodePreview({
   };
 
   return (
-    <div className={clsx("space-y-0", className)}>
-      <AnimatedTabs activeTab={activeTab} onTabChange={handleTabChange} />
-      <div className={clsx(
-        "rounded-xl rounded-tl-none border border-border",
-        activeTab === "code" && "overflow-hidden"
-      )}>
-        {activeTab === "preview" ? (
-          <div className="p-6 bg-card/50 min-h-[120px]">{preview}</div>
-        ) : (
-          <div className="relative">
-            <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
-              <LanguageToggle
-                language={currentLang}
-                onToggle={() => setCurrentLang(currentLang === "tsx" ? "jsx" : "tsx")}
-              />
-              <CopyButton code={displayCode} />
-            </div>
-            {hasLoadedCode && (
-              <Suspense fallback={<CodePlaceholder />}>
-                <CodeHighlighter code={displayCode} language={currentLang} />
-              </Suspense>
-            )}
+    <div className={clsx("space-y-0 relative", className)}>
+      <SimpleTabs activeTab={activeTab} onTabChange={handleTabChange} />
+      {activeTab === "preview" ? (
+        <div className="rounded-xl rounded-tl-none border border-border p-6 bg-card/50 min-h-[120px]">
+          {preview}
+        </div>
+      ) : (
+        <div className="rounded-xl rounded-tl-none border border-border overflow-hidden relative">
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+            <LanguageToggle
+              language={currentLang}
+              onToggle={() => setCurrentLang(currentLang === "tsx" ? "jsx" : "tsx")}
+            />
+            <CopyButton code={displayCode} />
           </div>
-        )}
-      </div>
+          {hasLoadedCode && (
+            <Suspense fallback={<CodePlaceholder />}>
+              <CodeHighlighter code={displayCode} language={currentLang} />
+            </Suspense>
+          )}
+        </div>
+      )}
     </div>
   );
 }

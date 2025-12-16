@@ -6,9 +6,11 @@ import { PageWrapper } from "@/components/page-transition";
 export default function AboutPage() {
   return (
     <PageWrapper>
-      <div>
-        <h1 className={title({})}>About</h1>
-      </div>
+      <main className="container mx-auto max-w-7xl pt-6 px-6 flex-grow pb-16">
+        <div>
+          <h1 className={title({})}>About</h1>
+        </div>
+      </main>
     </PageWrapper>
   );
 }

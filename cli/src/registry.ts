@@ -122,6 +122,22 @@ export const registry: Record<string, ComponentDefinition> = {
     devDependencies: [],
     registryDependencies: [],
   },
+  modal: {
+    name: "modal",
+    description: "A fully featured modal dialog with animations, sizes, and placements",
+    files: ["components/ui/modal.tsx"],
+    dependencies: ["clsx", "framer-motion"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
+  skeleton: {
+    name: "skeleton",
+    description: "Loading placeholder components with multiple animations and presets",
+    files: ["components/ui/skeleton.tsx"],
+    dependencies: ["clsx"],
+    devDependencies: [],
+    registryDependencies: [],
+  },
 };
 
 export const baseFiles = {

@@ -89,7 +89,42 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
+  -webkit-overflow-scrolling: touch;
 }
+
+/* Smooth scrolling container */
+main,
+.docs-content {
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+/* Optimize scroll performance */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* CRITICAL: Prevent parallax/jitter during fast scroll */
+/* Force hardware acceleration on scroll containers */
+main {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Stabilize content but allow overflow for dropdowns */
+[class*="bg-card"]:not(:has([role="menu"], [role="listbox"])) {
+  transform: translateZ(0);
+}
+
+/* Ensure animated elements don't cause scroll jitter */
+.animate-pulse,
+.skeleton-wave,
+.skeleton-shimmer {
+  contain: strict;
+  transform: translateZ(0);
+}
+
+
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
@@ -112,6 +147,35 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+}
+
+/* Smooth content transitions */
+.page-content {
+  animation: page-fade-in 0.2s ease-out;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Optimize heavy sections - pause animations when off-screen */
+section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Reduce animation work during scroll */
+@media (prefers-reduced-motion: no-preference) {
+  .scrolling * {
+    animation-play-state: paused !important;
+  }
 }
 
 /* GPU acceleration for animations */
@@ -189,39 +253,59 @@ img {
 }
 
 
-/* Skeleton Animations */
+/* Skeleton Animations - GPU optimized */
 @keyframes skeleton-wave {
   0% {
-    background-position: -200% 0;
+    transform: translateX(-100%);
   }
   100% {
-    background-position: 200% 0;
+    transform: translateX(100%);
   }
 }
 
 @keyframes skeleton-shimmer {
-  0% {
+  0%, 100% {
     opacity: 1;
   }
   50% {
     opacity: 0.4;
   }
-  100% {
-    opacity: 1;
-  }
 }
 
 .skeleton-wave {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--muted) / 0.6);
+}
+
+.skeleton-wave::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     90deg,
-    hsl(var(--muted) / 0.6) 0%,
+    transparent 0%,
     hsl(var(--muted) / 0.3) 50%,
-    hsl(var(--muted) / 0.6) 100%
+    transparent 100%
   );
-  background-size: 200% 100%;
+  transform: translateX(-100%);
   animation: skeleton-wave 1.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 .skeleton-shimmer {
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  will-change: opacity;
+}
+
+/* Optimize Tailwind's animate-pulse for skeletons */
+.animate-pulse {
+  will-change: opacity;
+}
+
+
+/* Ensure dropdown menus appear above scroll containers */
+[role="menu"],
+[role="listbox"] {
+  z-index: 9999 !important;
 }

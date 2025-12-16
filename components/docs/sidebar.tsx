@@ -42,8 +42,6 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
   const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 28, opacity: 1 });
-  const [isAnimating, setIsAnimating] = useState(false);
-  const prevPathRef = useRef(pathname);
 
   // Update indicator position
   useEffect(() => {
@@ -66,49 +64,25 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   }, [pathname]);
 
   const handleClick = (href: string) => {
-    // Don't block navigation - just trigger animation
     onLinkClick?.();
     
-    if (href === pathname || isAnimating) return;
+    if (href === pathname) return;
 
     const clickedEl = itemRefs.current.get(href);
-    const activeEl = itemRefs.current.get(pathname);
     const container = containerRef.current;
 
-    if (!clickedEl || !activeEl || !container) return;
+    if (!clickedEl || !container) return;
 
     const containerRect = container.getBoundingClientRect();
-    const activeRect = activeEl.getBoundingClientRect();
     const clickedRect = clickedEl.getBoundingClientRect();
 
-    const activeTop = activeRect.top - containerRect.top;
-    const clickedTop = clickedRect.top - containerRect.top;
-
-    const expandedTop = Math.min(activeTop, clickedTop);
-    const expandedHeight = Math.abs(clickedTop - activeTop) + activeRect.height;
-
-    setIsAnimating(true);
-
-    // Phase 1: Expand
+    // Just move directly to the new position
     setIndicatorStyle({
-      top: expandedTop,
-      height: expandedHeight,
-      opacity: 0.5,
+      top: clickedRect.top - containerRect.top,
+      height: clickedRect.height,
+      opacity: 1,
     });
 
-    // Phase 2: Shrink to new position
-    setTimeout(() => {
-      setIndicatorStyle({
-        top: clickedTop,
-        height: clickedRect.height,
-        opacity: 1,
-      });
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, 200);
-    }, 150);
-
-    prevPathRef.current = href;
   };
 
   return (
