@@ -19,6 +19,7 @@ import {
 const execAsync = promisify(exec);
 
 const SPARKUI_CSS = `@import "tailwindcss";
+@import "./sparkui.css";
 
 /* ✦ SparkUI Theme Variables */
 
